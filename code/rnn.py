@@ -83,11 +83,16 @@ class RNN(object):
 		# s has one more row, since we need to look back even at time 0 (s(t=0-1) will just be [0. 0. ....] )
 		s = np.zeros((len(x) + 1, self.hidden_dims))
 		y = np.zeros((len(x), self.out_vocab_size))
-		
+
 		for t in range(len(x)):
 			##########################
 			# --- your code here --- #
 			##########################
+			x_one = make_onehot(x[t], self.vocab_size)
+			net_in = np.dot(x_one, np.transpose(self.V)) + np.dot(s[t-1,:], np.transpose(self.U))
+			s[t,:] = sigmoid(net_in)
+			net_out = np.dot(s[t,:], np.transpose(self.W))
+			y[t,:] = softmax(net_out)
 		
 		return y, s
 	
@@ -108,11 +113,22 @@ class RNN(object):
 		no return values
 		'''
 		
+		y, s = self.predict(x)
+
 		for t in reversed(range(len(x))):
 			##########################
 			# --- your code here --- #
 			##########################
+			x_one = make_onehot(x[t], self.vocab_size)
+			d_one = make_onehot(d[t], self.out_vocab_size) # (1, out_vocab_size)
+			delta_out = d_one - y[t]
+			self.deltaW += np.outer(delta_out, s[t])
 
+			delta_in = np.dot(delta_out, self.W) # (1, hidden_dims)
+			delta_in = np.multiply(delta_in, grad(s[t]))
+			self.deltaV += np.outer(delta_in, x_one)
+			self.deltaU += np.outer(delta_in, s[t-1])
+			
 
 	def acc_deltas_np(self, x, d, y, s):
 		'''
@@ -135,7 +151,7 @@ class RNN(object):
 		##########################
 		# --- your code here --- #
 		##########################
-		
+		pass
 		
 	def acc_deltas_bptt(self, x, d, y, s, steps):
 		'''
@@ -154,13 +170,33 @@ class RNN(object):
 		
 		no return values
 		'''
+
+		y, s = self.predict(x)
+
 		for t in reversed(range(len(x))):
 			# print("time {0}".format(t))
 			##########################
 			# --- your code here --- #
 			##########################
+			
+			d_one = make_onehot(d[t], self.out_vocab_size) # (1, out_vocab_size)
+			delta_out = d_one - y[t]
+			self.deltaW += np.outer(delta_out, s[t])
 
+			delta_in = np.dot(delta_out, self.W) # (1, hidden_dims)
+			delta_in = np.multiply(delta_in, grad(s[t]))
+			x_one = make_onehot(x[t], self.vocab_size)
+			self.deltaV += np.outer(delta_in, x_one)
+			self.deltaU += np.outer(delta_in, s[t-1])
 
+			for tau in range(1, steps+1):
+				delta_in = np.dot(delta_in, self.U)
+				delta_in = np.multiply(delta_in, grad(s[t-tau]))
+				x_one = make_onehot(x[t-tau], self.vocab_size)
+				self.deltaV += np.outer(delta_in, x_one)
+				self.deltaU += np.outer(delta_in, s[t-tau-1])
+
+			
 	def acc_deltas_bptt_np(self, x, d, y, s, steps):
 		'''
 		accumulate updates for V, W, U
@@ -202,7 +238,12 @@ class RNN(object):
 		##########################
 		# --- your code here --- #
 		##########################
-		
+		y, _ = self.predict(x)
+
+		for t in range(len(d)):
+			d_one = make_onehot(d[t], self.out_vocab_size)
+			loss -= np.dot(d_one, np.log(y[t]))
+			
 		return loss
 
 
@@ -288,10 +329,16 @@ class RNN(object):
 		'''
 		
 		mean_loss = 0.
-		
+		num_words = 0
+
 		##########################
 		# --- your code here --- #
 		##########################
+		for i in range(len(X)):
+			mean_loss += self.compute_loss(X[i], D[i])
+			num_words += len(D[i])
+
+		mean_loss /= num_words
 		
 		return mean_loss
 	
@@ -585,7 +632,7 @@ if __name__ == "__main__":
 	mode = sys.argv[1].lower()
 	data_folder = sys.argv[2]
 	np.random.seed(2018)
-	
+
 	if mode == "train-lm":
 		'''
 		code for training language model.
@@ -631,10 +678,10 @@ if __name__ == "__main__":
 		##########################
 		
 		run_loss = -1
-    adjusted_loss = -1
+	adjusted_loss = -1
 
-    print("Unadjusted: %.03f" % np.exp(run_loss))
-    print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
+	print("Unadjusted: %.03f" % np.exp(run_loss))
+	print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
 
 
 	if mode == "train-np":
