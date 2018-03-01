@@ -289,9 +289,13 @@ class RNN(object):
 
         mean_loss = 0.
 
-        ##########################
-        # --- your code here --- #
-        ##########################
+        for d, x in zip(D, X):
+            pass
+            #mean_loss += # loss, avg'd over sentence
+
+        # mean_loss = mean
+
+        # TODO
 
         return mean_loss
 
