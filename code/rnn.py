@@ -8,6 +8,7 @@ from rnnmath import *
 from sys import stdout
 
 import itertools
+import os
 
 
 class RNN(object):
@@ -343,6 +344,18 @@ class RNN(object):
 		mean_loss /= num_words
 		
 		return mean_loss
+
+	def save_weights(self, dir='models', suffix=''):
+		'''
+		Save current state of matrices U, V, and W.
+		'''
+		if not os.path.exists(dir):
+   			os.makedirs(dir)
+
+		np.save(os.path.join(dir, 'rnn{}.U.npy'.format(suffix)), self.U)
+		np.save(os.path.join(dir, 'rnn{}.V.npy'.format(suffix)), self.V)
+		np.save(os.path.join(dir, 'rnn{}.W.npy'.format(suffix)), self.W)
+
 	
 		
 	def train(self, X, D, X_dev, D_dev, epochs=10, learning_rate=0.5, anneal=5, back_steps=0, batch_size=100, min_change=0.0001, log=True):
@@ -640,13 +653,13 @@ if __name__ == "__main__":
 		code for training language model.
 		change this to different values, or use it to get you started with your own testing class
 		'''
-		train_size = 1000
-		dev_size = 1000
-		vocab_size = 2000
-		
+
 		hdim = int(sys.argv[3]) if len(sys.argv) >= 4 else None
 		lookback = int(sys.argv[4]) if len(sys.argv) >= 5 else None
 		lr = float(sys.argv[5]) if len(sys.argv) >= 6 else None
+		train_size = int(sys.argv[6]) if len(sys.argv) >= 7 else 1000
+		dev_size = int(sys.argv[7]) if len(sys.argv) >= 8 else 1000
+		vocab_size = 2000
 		
 		# get the data set vocabulary
 		vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0, names=['count', 'freq'], )
@@ -680,6 +693,7 @@ if __name__ == "__main__":
 		##########################
 
 		def _train():
+			''' Calls the RNN training routine. '''
 			r = RNN(vocab_size, hdim, vocab_size)
 			run_loss = r.train(X_train, D_train, X_dev, D_dev, 
 							back_steps=lookback, learning_rate=lr, epochs=10)
@@ -687,26 +701,27 @@ if __name__ == "__main__":
 
 			print("Unadjusted: %.03f" % np.exp(run_loss))
 			print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
-			return run_loss, adjusted_loss
+			return r, run_loss, adjusted_loss
 
-
+		# when hyperparameters are not given, do grid search
 		if hdim is None:
 			hdims = [25, 50]
 			lookbacks = [0, 2, 5]
 			lrs = [.5, .1, .05]
 			hyperparams = [hdims, lookbacks, lrs]
 
-			experiments = []
+			experiment = []
 			best_loss = -1
 			best_params = None
 
+			# iterate over all combinations of params
 			for params in itertools.product(*hyperparams):
 				hdim = params[0]
 				lookback = params[1]
 				lr = params[2]
 
-				run_loss, adjusted_loss = _train()
-				experiments.append({
+				r, run_loss, adjusted_loss = _train()
+				experiment.append({
 					'hdim': hdim,
 					'lookback': lookback,
 					'lr': lr,
@@ -714,11 +729,15 @@ if __name__ == "__main__":
 					'loss_adjusted': adjusted_loss
 				})
 
+				# keep track of the best model
 				if best_loss < 0 or best_loss > run_loss:
 					best_loss = run_loss
 					best_params = params
+					suffix = '_hdim_{}_lb_{}_lr_{}'.format(hdim, lookback, lr)
+					r.save_weights(suffix=suffix)
 
-			df = pd.DataFrame(experiments)
+			# save experiment results to file
+			df = pd.DataFrame(experiment)
 			df.to_csv('question2a.csv')
 			print('\nFinished parameter tuning.')
 			print('\nBest params:\nhdim = {}\
@@ -728,8 +747,8 @@ if __name__ == "__main__":
 												best_params[2]))
 				
 		else:
-			run_loss, adjusted_loss = _train()
-			
+			r, run_loss, adjusted_loss = _train()
+			r.save_weights()
 
 
 	if mode == "train-np":
