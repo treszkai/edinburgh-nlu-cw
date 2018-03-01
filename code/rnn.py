@@ -809,6 +809,47 @@ if __name__ == "__main__":
 		vocab_size = len(V[0])
 		hdim = len(U[0])
 
+		r = RNN(vocab_size, hdim, vocab_size)
+		r.U = U
+		r.V = V
+		r.W = W
+
+		# get vocabulary
+		vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0, names=['count', 'freq'], )
+		num_to_word = dict(enumerate(vocab.index[:vocab_size]))
+		word_to_num = invert_dict(num_to_word)
+
+		# calculate loss vocabulary words due to vocab_size
+		fraction_lost = fraq_loss(vocab, word_to_num, vocab_size)
+		print("Retained %d words from %d (%.02f%% of all tokens)\n" % (vocab_size, len(vocab), 100*(1-fraction_lost)))
+		
+		# q = best unigram frequency from omitted vocab
+		# this is the best expected loss out of that set
+		q = vocab.freq[vocab_size] / sum(vocab.freq[vocab_size:])
+
+		# Load the dev set (for tuning hyperparameters)
+		docs = load_lm_dataset(data_folder + '/wiki-test.txt')
+		S_test = docs_to_indices(docs, word_to_num, 1, 0)
+		X_test, D_test = seqs_to_lmXY(S_test)
+
+		mean_loss = r.compute_mean_loss(X_test, D_test)
+		adjusted_loss = adjust_loss(mean_loss, fraction_lost, q)
+
+		print('Mean loss:', mean_loss)
+		print("Unadjusted perplexity: %.03f" % np.exp(mean_loss))
+		print("Adjusted perplexity: %.03f" % np.exp(adjusted_loss))
+
+
+	if mode == "predict-np":
+		
+		data_folder = sys.argv[2]
+		rnn_folder = sys.argv[3]
+
+		# get saved RNN matrices and setup RNN
+		U,V,W = np.load(rnn_folder + "/rnn.U.npy"), np.load(rnn_folder + "/rnn.V.npy"), np.load(rnn_folder + "/rnn.W.npy")
+		vocab_size = len(V[0])
+		hdim = len(U[0])
+
 		dev_size = 1000
 
 		r = RNN(vocab_size, hdim, vocab_size)
@@ -828,7 +869,3 @@ if __name__ == "__main__":
 
 		X_np_dev = X_np_dev[:dev_size]
 		D_np_dev = D_np_dev[:dev_size]
-
-		np_acc = r.compute_acc_lmnp(X_np_dev, D_np_dev)
-
-		print('Number prediction accuracy:', np_acc)
