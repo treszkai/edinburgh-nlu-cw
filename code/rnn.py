@@ -202,11 +202,12 @@ class RNN(object):
         return loss		the combined loss for all words
         '''
 
-        loss = 0.
+        d_onehot = np.array([make_onehot(d_j, self.vocab_size) for d_j in d])
+        y, _ = self.predict(x)
 
-        ##########################
-        # --- your code here --- #
-        ##########################
+        for t in range(len(x)):
+            # loss -= np.sum(make_onehot(d[t], self.vocab_size) @ np.log(y[t]), axis=0)
+            loss = - np.sum( np.sum(d_onehot * np.log(y), axis=1) )
 
         return loss
 
