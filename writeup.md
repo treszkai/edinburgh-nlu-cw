@@ -41,6 +41,7 @@ we have the lowest cross-entropy on the first 1000 sentences of the development 
 
 ## Question 2b
 
+Training model on `25000` sentences of training set:
 ```
 $> python rnn.py train-lm data 25 5 0.5 25000 1000
 ```
@@ -75,4 +76,15 @@ best observed loss was 4.458638446567996, at epoch 10
 setting U, V, W to matrices from best epoch
 Unadjusted: 86.370
 Adjusted for missing vocab: 114.927
+```
+
+Evaluating model on full test set:
+```
+$> python rnn.py predict-lm data models
+```
+
+```
+Mean loss: 4.665231887752031
+Unadjusted perplexity: 106.190
+Adjusted perplexity: 145.025
 ```
