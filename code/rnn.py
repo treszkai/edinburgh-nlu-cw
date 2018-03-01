@@ -7,6 +7,8 @@ from utils import *
 from rnnmath import *
 from sys import stdout
 
+import itertools
+
 
 class RNN(object):
 	'''
@@ -642,9 +644,9 @@ if __name__ == "__main__":
 		dev_size = 1000
 		vocab_size = 2000
 		
-		hdim = int(sys.argv[3])
-		lookback = int(sys.argv[4])
-		lr = float(sys.argv[5])
+		hdim = int(sys.argv[3]) if len(sys.argv) >= 4 else None
+		lookback = int(sys.argv[4]) if len(sys.argv) >= 5 else None
+		lr = float(sys.argv[5]) if len(sys.argv) >= 6 else None
 		
 		# get the data set vocabulary
 		vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0, names=['count', 'freq'], )
@@ -676,12 +678,58 @@ if __name__ == "__main__":
 		##########################
 		# --- your code here --- #
 		##########################
-		
-		run_loss = -1
-	adjusted_loss = -1
 
-	print("Unadjusted: %.03f" % np.exp(run_loss))
-	print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
+		def _train():
+			r = RNN(vocab_size, hdim, vocab_size)
+			run_loss = r.train(X_train, D_train, X_dev, D_dev, 
+							back_steps=lookback, learning_rate=lr, epochs=10)
+			adjusted_loss = adjust_loss(run_loss, fraction_lost, q)
+
+			print("Unadjusted: %.03f" % np.exp(run_loss))
+			print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
+			return run_loss, adjusted_loss
+
+
+		if hdim is None:
+			hdims = [25, 50]
+			lookbacks = [0, 2, 5]
+			lrs = [.5, .1, .05]
+			hyperparams = [hdims, lookbacks, lrs]
+
+			experiments = []
+			best_loss = -1
+			best_params = None
+
+			for params in itertools.product(*hyperparams):
+				hdim = params[0]
+				lookback = params[1]
+				lr = params[2]
+
+				run_loss, adjusted_loss = _train()
+				experiments.append({
+					'hdim': hdim,
+					'lookback': lookback,
+					'lr': lr,
+					'loss': run_loss,
+					'loss_adjusted': adjusted_loss
+				})
+
+				if best_loss < 0 or best_loss > run_loss:
+					best_loss = run_loss
+					best_params = params
+
+			df = pd.DataFrame(experiments)
+			df.to_csv('question2a.csv')
+			print('\nFinished parameter tuning.')
+			print('\nBest params:\nhdim = {}\
+				   \nlookback = {}\
+				   \nlearning rate = {}'.format(best_params[0],
+												best_params[1],
+												best_params[2]))
+				
+		else:
+			run_loss, adjusted_loss = _train()
+			
 
 
 	if mode == "train-np":
