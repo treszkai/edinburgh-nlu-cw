@@ -42,7 +42,7 @@ we have the lowest cross-entropy on the first 1000 sentences of the development 
 ## Question 2b
 
 ```
-python /Users/mfonseca/Documents/GitHub/nlu-cw/code/rnn.py train-lm data 25 5 0.5 25000 1000
+$> python rnn.py train-lm data 25 5 0.5 25000 1000
 ```
 
 ```
