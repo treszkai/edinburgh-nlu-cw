@@ -38,3 +38,37 @@ for `10` epochs. The results are listed below:
 
 Thus, for `hidden layer dimension = 25`, `lookback = 5` and `learning rate` = 0.5, 
 we have the lowest cross-entropy on the first 1000 sentences of the development set. 
+
+## Question 2b
+
+```
+Retained 2000 words from 9954 (88.81% of all tokens)
+
+
+Training model for 10 epochs
+training set: 25000 sentences (batch size 100)
+Optimizing loss on 1000 sentences
+Vocab size: 2000
+Hidden units: 25
+Steps for back propagation: 5
+Initial learning rate set to 0.5, annealing set to 5
+
+calculating initial mean loss on dev set: 7.798662515757492
+
+epoch 1, learning rate 0.5000   instance 25000  epoch done in 1090.18 seconds   new loss: 4.794482577289604
+epoch 2, learning rate 0.4167   instance 25000  epoch done in 1076.89 seconds   new loss: 4.729572300411105
+epoch 3, learning rate 0.3571   instance 25000  epoch done in 1046.31 seconds   new loss: 4.639506451586233
+epoch 4, learning rate 0.3125   instance 25000  epoch done in 1068.40 seconds   new loss: 4.603703109568141
+epoch 5, learning rate 0.2778   instance 25000  epoch done in 1095.79 seconds   new loss: 4.574999420256336
+epoch 6, learning rate 0.2500   instance 25000  epoch done in 1059.30 seconds   new loss: 4.524480540439848
+epoch 7, learning rate 0.2273   instance 25000  epoch done in 1057.39 seconds   new loss: 4.508409447677186
+epoch 8, learning rate 0.2083   instance 25000  epoch done in 991.20 seconds    new loss: 4.491795418798984
+epoch 9, learning rate 0.1923   instance 25000  epoch done in 1034.36 seconds   new loss: 4.487813217153281
+epoch 10, learning rate 0.1786  instance 25000  epoch done in 1023.19 seconds   new loss: 4.458638446567996
+
+training finished after reaching maximum of 10 epochs
+best observed loss was 4.458638446567996, at epoch 10
+setting U, V, W to matrices from best epoch
+Unadjusted: 86.370
+Adjusted for missing vocab: 114.927
+```
