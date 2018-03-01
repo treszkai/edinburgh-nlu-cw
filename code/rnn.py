@@ -635,88 +635,88 @@ if __name__ == "__main__":
         ##########################
 
         run_loss = -1
-adjusted_loss = -1
+        adjusted_loss = -1
 
-print("Unadjusted: %.03f" % np.exp(run_loss))
-print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
+        print("Unadjusted: %.03f" % np.exp(run_loss))
+        print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
 
-if mode == "train-np":
-    '''
-    starter code for parameter estimation.
-    change this to different values, or use it to get you started with your own testing class
-    '''
-    train_size = 1000
-    dev_size = 1000
-    vocab_size = 2000
+    if mode == "train-np":
+        '''
+        starter code for parameter estimation.
+        change this to different values, or use it to get you started with your own testing class
+        '''
+        train_size = 1000
+        dev_size = 1000
+        vocab_size = 2000
 
-    hdim = int(sys.argv[3])
-    lookback = int(sys.argv[4])
-    lr = float(sys.argv[5])
+        hdim = int(sys.argv[3])
+        lookback = int(sys.argv[4])
+        lr = float(sys.argv[5])
 
-    # get the data set vocabulary
-    vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0,
-                          names=['count', 'freq'], )
-    num_to_word = dict(enumerate(vocab.index[:vocab_size]))
-    word_to_num = invert_dict(num_to_word)
+        # get the data set vocabulary
+        vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0,
+                              names=['count', 'freq'], )
+        num_to_word = dict(enumerate(vocab.index[:vocab_size]))
+        word_to_num = invert_dict(num_to_word)
 
-    # calculate loss vocabulary words due to vocab_size
-    fraction_lost = fraq_loss(vocab, word_to_num, vocab_size)
-    print("Retained %d words from %d (%.02f%% of all tokens)\n" % (vocab_size, len(vocab), 100 * (1 - fraction_lost)))
+        # calculate loss vocabulary words due to vocab_size
+        fraction_lost = fraq_loss(vocab, word_to_num, vocab_size)
+        print("Retained %d words from %d (%.02f%% of all tokens)\n" % (vocab_size, len(vocab), 100 * (1 - fraction_lost)))
 
-    # load training data
-    sents = load_np_dataset(data_folder + '/wiki-train.txt')
-    S_train = docs_to_indices(sents, word_to_num, 0, 0)
-    X_train, D_train = seqs_to_npXY(S_train)
+        # load training data
+        sents = load_np_dataset(data_folder + '/wiki-train.txt')
+        S_train = docs_to_indices(sents, word_to_num, 0, 0)
+        X_train, D_train = seqs_to_npXY(S_train)
 
-    X_train = X_train[:train_size]
-    Y_train = D_train[:train_size]
+        X_train = X_train[:train_size]
+        Y_train = D_train[:train_size]
 
-    # load development data
-    sents = load_np_dataset(data_folder + '/wiki-dev.txt')
-    S_dev = docs_to_indices(sents, word_to_num, 0, 0)
-    X_dev, D_dev = seqs_to_npXY(S_dev)
+        # load development data
+        sents = load_np_dataset(data_folder + '/wiki-dev.txt')
+        S_dev = docs_to_indices(sents, word_to_num, 0, 0)
+        X_dev, D_dev = seqs_to_npXY(S_dev)
 
-    X_dev = X_dev[:train_size]
-    D_dev = D_dev[:train_size]
+        X_dev = X_dev[:train_size]
+        D_dev = D_dev[:train_size]
 
-    ##########################
-    # --- your code here --- #
-    ##########################
+        ##########################
+        # --- your code here --- #
+        ##########################
 
-    acc = 0.
+        acc = 0.
 
-    print("Accuracy: %.03f" % acc)
+        print("Accuracy: %.03f" % acc)
 
-if mode == "predict-lm":
-    data_folder = sys.argv[2]
-    rnn_folder = sys.argv[3]
+    if mode == "predict-lm":
+        data_folder = sys.argv[2]
+        rnn_folder = sys.argv[3]
 
-    # get saved RNN matrices and setup RNN
-    U, V, W = np.load(rnn_folder + "/rnn.U.npy"), np.load(rnn_folder + "/rnn.V.npy"), np.load(rnn_folder + "/rnn.W.npy")
-    vocab_size = len(V[0])
-    hdim = len(U[0])
+        # get saved RNN matrices and setup RNN
+        U, V, W = np.load(rnn_folder + "/rnn.U.npy"), np.load(rnn_folder + "/rnn.V.npy"), np.load(rnn_folder + "/rnn.W.npy")
+        vocab_size = len(V[0])
+        hdim = len(U[0])
 
-    dev_size = 1000
+        dev_size = 1000
 
-    r = RNN(vocab_size, hdim, vocab_size)
-    r.U = U
-    r.V = V
-    r.W = W
+        r = RNN(vocab_size, hdim, vocab_size)
+        r.U = U
+        r.V = V
+        r.W = W
 
-    # get vocabulary
-    vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0,
-                          names=['count', 'freq'], )
-    num_to_word = dict(enumerate(vocab.index[:vocab_size]))
-    word_to_num = invert_dict(num_to_word)
+        # get vocabulary
+        vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0,
+                              names=['count', 'freq'], )
+        num_to_word = dict(enumerate(vocab.index[:vocab_size]))
+        word_to_num = invert_dict(num_to_word)
 
-    # Load the dev set (for tuning hyperparameters)
-    docs = load_lm_np_dataset(data_folder + '/wiki-dev.txt')
-    S_np_dev = docs_to_indices(docs, word_to_num, 1, 0)
-    X_np_dev, D_np_dev = seqs_to_lmnpXY(S_np_dev)
+        # Load the dev set (for tuning hyperparameters)
+        docs = load_lm_np_dataset(data_folder + '/wiki-dev.txt')
+        S_np_dev = docs_to_indices(docs, word_to_num, 1, 0)
+        X_np_dev, D_np_dev = seqs_to_lmnpXY(S_np_dev)
 
-    X_np_dev = X_np_dev[:dev_size]
-    D_np_dev = D_np_dev[:dev_size]
+        X_np_dev = X_np_dev[:dev_size]
+        D_np_dev = D_np_dev[:dev_size]
 
-    np_acc = r.compute_acc_lmnp(X_np_dev, D_np_dev)
+        np_acc = r.compute_acc_lmnp(X_np_dev, D_np_dev)
 
-    print('Number prediction accuracy:', np_acc)
+        print('Number prediction accuracy:', np_acc)
