@@ -85,11 +85,12 @@ class RNN(object):
         s = np.zeros((len(x) + 1, self.hidden_dims))
         y = np.zeros((len(x), self.out_vocab_size))
 
-        for t in range(len(x)):
-            pass
-        ##########################
-        # --- your code here --- #
-        ##########################
+        for t, w_t in enumerate(x):
+            x_t = make_onehot(w_t, self.vocab_size)
+            net_in = self.V @ x_t + self.U @ s[t-1]
+            s[t] = sigmoid(net_in)
+            net_out = self.W @ s[t]
+            y[t] = softmax(net_out)
 
         return y, s
 
