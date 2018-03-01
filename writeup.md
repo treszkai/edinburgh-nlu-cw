@@ -42,6 +42,10 @@ we have the lowest cross-entropy on the first 1000 sentences of the development 
 ## Question 2b
 
 ```
+$> python rnn.py train-lm data 25 5 0.5 25000 1000
+```
+
+```
 Retained 2000 words from 9954 (88.81% of all tokens)
 
 
