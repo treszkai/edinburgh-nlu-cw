@@ -205,9 +205,7 @@ class RNN(object):
         d_onehot = np.array([make_onehot(d_j, self.vocab_size) for d_j in d])
         y, _ = self.predict(x)
 
-        for t in range(len(x)):
-            # loss -= np.sum(make_onehot(d[t], self.vocab_size) @ np.log(y[t]), axis=0)
-            loss = - np.sum( np.sum(d_onehot * np.log(y), axis=1) )
+        loss = - sum([ np.log(y[t,d[t]]) for t in range(len(x)) ])
 
         return loss
 
@@ -290,12 +288,9 @@ class RNN(object):
         mean_loss = 0.
 
         for d, x in zip(D, X):
-            pass
-            #mean_loss += # loss, avg'd over sentence
+            mean_loss += self.compute_loss(x, d)
 
-        # mean_loss = mean
-
-        # TODO
+        mean_loss /= sum([len(x) for x in X])
 
         return mean_loss
 
