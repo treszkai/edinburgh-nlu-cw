@@ -86,8 +86,8 @@ class RNN(object):
         y = np.zeros((len(x), self.out_vocab_size))
 
         for t, w_t in enumerate(x):
-            x_t = make_onehot(w_t, self.vocab_size)
-            net_in = self.V @ x_t + self.U @ s[t-1]
+            # x_t = make_onehot(w_t, self.vocab_size)
+            net_in = self.V[:, w_t] + self.U @ s[t-1]
             s[t] = sigmoid(net_in)
             net_out = self.W @ s[t]
             y[t] = softmax(net_out)
@@ -204,7 +204,9 @@ class RNN(object):
 
         y, _ = self.predict(x)
 
-        loss = - sum([ np.log(y[t,d[t]]) for t in range(len(x)) ])
+        # loss = - sum([ np.log(y[t,d[t]]) for t in range(len(x)) ])
+
+        loss = - np.sum(np.log(y[range(len(d)), d]))
 
         return loss
 
