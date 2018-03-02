@@ -112,10 +112,10 @@ class RNN(object):
         '''
 
         for t in reversed(range(len(x))):
-            pass
-    ##########################
-    # --- your code here --- #
-    ##########################
+            d_onehot = make_onehot(d[t], self.out_vocab_size)
+            net_out_t_bar = d_onehot - y[t]
+
+            self.deltaW += np.outer(net_out_t_bar, s[t])
 
 
     def acc_deltas_np(self, x, d, y, s):
@@ -202,7 +202,6 @@ class RNN(object):
         return loss		the combined loss for all words
         '''
 
-        d_onehot = np.array([make_onehot(d_j, self.vocab_size) for d_j in d])
         y, _ = self.predict(x)
 
         loss = - sum([ np.log(y[t,d[t]]) for t in range(len(x)) ])
