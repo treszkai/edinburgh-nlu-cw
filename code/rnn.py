@@ -86,7 +86,6 @@ class RNN(object):
         y = np.zeros((len(x), self.out_vocab_size))
 
         for t, w_t in enumerate(x):
-            # x_t = make_onehot(w_t, self.vocab_size)
             net_in = self.V[:, w_t] + self.U @ s[t-1]
             s[t] = sigmoid(net_in)
             net_out = self.W @ s[t]
@@ -111,11 +110,22 @@ class RNN(object):
         no return values
         '''
 
+        self.deltaU = np.zeros_like(self.deltaU)
+        self.deltaV = np.zeros_like(self.deltaV)
+        self.deltaW = np.zeros_like(self.deltaW)
+
         for t in reversed(range(len(x))):
             d_onehot = make_onehot(d[t], self.out_vocab_size)
             net_out_t_bar = d_onehot - y[t]
 
             self.deltaW += np.outer(net_out_t_bar, s[t])
+
+            s_t_bar = self.W.T @ net_out_t_bar
+            net_in_t_bar = s_t_bar * s[t] * (1 - s[t])
+
+            self.deltaU += np.outer(net_in_t_bar, s[t-1])
+
+            self.deltaV[:,x[t]] += net_in_t_bar
 
 
     def acc_deltas_np(self, x, d, y, s):
@@ -203,8 +213,6 @@ class RNN(object):
         '''
 
         y, _ = self.predict(x)
-
-        # loss = - sum([ np.log(y[t,d[t]]) for t in range(len(x)) ])
 
         loss = - np.sum(np.log(y[range(len(d)), d]))
 
