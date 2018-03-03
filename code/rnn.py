@@ -8,7 +8,6 @@ from utils import *
 from rnnmath import *
 from sys import stdout
 
-
 class RNN(object):
     '''
     This class implements Recurrent Neural Networks.
@@ -602,12 +601,12 @@ class RNN(object):
 
         return best_loss
 
-
 if __name__ == "__main__":
-
     mode = sys.argv[1].lower()
     data_folder = sys.argv[2]
-    np.random.seed(2018)
+    seed = 2018
+    print('seed: {}'.format(seed))
+    np.random.seed(seed)
 
     if mode == "train-lm":
         '''
@@ -618,9 +617,13 @@ if __name__ == "__main__":
         dev_size = 1000
         vocab_size = 2000
 
-        hdim = int(sys.argv[3])
-        lookback = int(sys.argv[4])
-        lr = float(sys.argv[5])
+        hdim = int(sys.argv[3]) if len(sys.argv) >= 4 else None
+        lookback = int(sys.argv[4]) if len(sys.argv) >= 5 else None
+        lr = float(sys.argv[5]) if len(sys.argv) >= 6 else None
+
+        # Added as a separate argument so as not to change the behavior of the program when less
+        #  than 5 arguments are specified. (In that case they might expect an error.)
+        is_param_search = len(sys.argv) > 6
 
         # get the data set vocabulary
         vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0,
@@ -651,15 +654,51 @@ if __name__ == "__main__":
         # this is the best expected loss out of that set
         q = vocab.freq[vocab_size] / sum(vocab.freq[vocab_size:])
 
-        ##########################
-        # --- your code here --- #
-        ##########################
+        def _train():
+            r = RNN(vocab_size, hdim, vocab_size)
+            run_loss = r.train(X_train, D_train, X_dev, D_dev,
+                               back_steps=lookback, learning_rate=lr, epochs=10)
+            adjusted_loss = adjust_loss(run_loss, fraction_lost, q)
 
-        run_loss = -1
-        adjusted_loss = -1
+            print("Unadjusted: %.03f" % np.exp(run_loss))
+            print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
 
-        print("Unadjusted: %.03f" % np.exp(run_loss))
-        print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
+            return run_loss, adjusted_loss
+
+
+        if is_param_search:
+            hdims = [25, 50]
+            lookbacks = [0, 2, 5]
+            lrs = [.5, .1]
+
+            experiments = []
+            best_loss = -1
+            best_params = None
+
+            for hdim, lookback, lr in zip(hdims, lookbacks, lrs):
+                run_loss, adjusted_loss = _train()
+                experiments.append({
+                    'hdim': hdim,
+                    'lookback': lookback,
+                    'lr': lr,
+                    'loss': run_loss,
+                    'loss_adjusted': adjusted_loss,
+                    'seed': seed
+                })
+
+                if best_loss < 0 or best_loss > run_loss:
+                    best_loss = run_loss
+                    best_params = (hdim, lookback, lr)
+
+            df = pd.DataFrame(experiments)
+            df.to_csv('question2a.csv')
+            print('\nFinished parameter tuning.')
+            print('\nBest params:\nhdim = {}\
+                   \nlookback = {}\
+                   \nlearning rate = {}'.format(*best_params))
+
+        else:
+            _ = _train()
 
     if mode == "train-np":
         '''
