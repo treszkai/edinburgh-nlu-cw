@@ -168,13 +168,24 @@ class RNN(object):
 
         no return values
         '''
-        for t in reversed(range(len(x))):
-            pass
-    # print("time {0}".format(t))
-    ##########################
-    # --- your code here --- #
-    ##########################
 
+        for t in reversed(range(len(x))):
+            d_one = make_onehot(d[t], self.out_vocab_size)  # (1, out_vocab_size)
+            delta_out = d_one - y[t]
+            self.deltaW += np.outer(delta_out, s[t])
+
+            delta_in = np.dot(delta_out, self.W)  # (1, hidden_dims)
+            delta_in = np.multiply(delta_in, grad(s[t]))
+            x_one = make_onehot(x[t], self.vocab_size)
+            self.deltaV += np.outer(delta_in, x_one)
+            self.deltaU += np.outer(delta_in, s[t - 1])
+
+            for tau in range(1, steps + 1):
+                delta_in = np.dot(delta_in, self.U)
+                delta_in = np.multiply(delta_in, grad(s[t - tau]))
+                x_one = make_onehot(x[t - tau], self.vocab_size)
+                self.deltaV += np.outer(delta_in, x_one)
+                self.deltaU += np.outer(delta_in, s[t - tau - 1])
 
     def acc_deltas_bptt_np(self, x, d, y, s, steps):
         '''
