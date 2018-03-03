@@ -394,7 +394,7 @@ class RNN(object):
             for i in range(len(X)):
                 c = i + 1
                 if log:
-                    stdout.write("\b" * len(str(i)))
+                    stdout.write("\r")
                     stdout.write("{0}".format(c))
                     stdout.flush()
                 p = permutation[i]
@@ -538,7 +538,7 @@ class RNN(object):
             for i in range(len(X)):
                 c = i + 1
                 if log:
-                    stdout.write("\b" * len(str(i)))
+                    stdout.write("\r")
                     stdout.write("{0}".format(c))
                     stdout.flush()
                 p = permutation[i]
