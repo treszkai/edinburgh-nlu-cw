@@ -191,6 +191,7 @@ class RNN(object):
 		'''
 
 		y, s = self.predict(x)
+		steps = min(len(x), steps)
 
 		for t in reversed(range(len(x))):
 			# print("time {0}".format(t))
@@ -240,6 +241,7 @@ class RNN(object):
 		##########################
 		y, s = self.predict(x)
 		d_one = make_onehot(d[0], self.out_vocab_size)
+		steps = min(len(x), steps)
 
 		for t in reversed(range(len(x))):
 			
@@ -826,20 +828,20 @@ if __name__ == "__main__":
 		S_dev = docs_to_indices(sents, word_to_num, 0, 0)
 		X_dev, D_dev = seqs_to_npXY(S_dev)
 		
-		X_dev = X_dev[:train_size]
-		D_dev = D_dev[:train_size]
-
+		X_dev = X_dev[:dev_size]
+		D_dev = D_dev[:dev_size]
 
 		##########################
 		# --- your code here --- #
 		##########################
-
-		acc = 0.
-		
+		r = RNN(vocab_size, hdim, vocab_size)
+		run_loss = r.train_np(X_train, D_train, X_dev, D_dev, 
+						   back_steps=lookback, learning_rate=lr, epochs=1)
+		acc = sum([r.compute_acc_np(X_dev[i], D_dev[i]) for i in range(len(X_dev))]) / len(X_dev)
 		print("Accuracy: %.03f" % acc)
 
 	
-	if mode == "predict-lm":
+	if mode == "predict-q2":
 		
 		data_folder = sys.argv[2]
 		rnn_folder = sys.argv[3]
@@ -880,7 +882,7 @@ if __name__ == "__main__":
 		print("Adjusted perplexity: %.03f" % np.exp(adjusted_loss))
 
 
-	if mode == "predict-np":
+	if mode == "predict-lm":
 		
 		data_folder = sys.argv[2]
 		rnn_folder = sys.argv[3]
