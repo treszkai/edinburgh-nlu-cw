@@ -346,8 +346,8 @@ class RNN(object):
 		##########################
 		# --- your code here --- #
 		##########################
-		
-		return 0
+		y, _ = self.predict(x)
+		return 1 if y[-1, d[0]] > y[-1, d[1]] else 0
 
 
 	def compute_acc_lmnp(self, X_dev, D_dev):
@@ -837,6 +837,7 @@ if __name__ == "__main__":
 		r = RNN(vocab_size, hdim, vocab_size)
 		run_loss = r.train_np(X_train, D_train, X_dev, D_dev, 
 						   back_steps=lookback, learning_rate=lr, epochs=1)
+		r.save_weights(suffix='-np')
 		acc = sum([r.compute_acc_np(X_dev[i], D_dev[i]) for i in range(len(X_dev))]) / len(X_dev)
 		print("Accuracy: %.03f" % acc)
 
@@ -869,7 +870,7 @@ if __name__ == "__main__":
 		# this is the best expected loss out of that set
 		q = vocab.freq[vocab_size] / sum(vocab.freq[vocab_size:])
 
-		# Load the dev set (for tuning hyperparameters)
+		# Load the test set (for evaluation)
 		docs = load_lm_dataset(data_folder + '/wiki-test.txt')
 		S_test = docs_to_indices(docs, word_to_num, 1, 0)
 		X_test, D_test = seqs_to_lmXY(S_test)
@@ -888,11 +889,9 @@ if __name__ == "__main__":
 		rnn_folder = sys.argv[3]
 
 		# get saved RNN matrices and setup RNN
-		U,V,W = np.load(rnn_folder + "/rnn.U.npy"), np.load(rnn_folder + "/rnn.V.npy"), np.load(rnn_folder + "/rnn.W.npy")
+		U,V,W = np.load(rnn_folder + "/rnn-np.U.npy"), np.load(rnn_folder + "/rnn-np.V.npy"), np.load(rnn_folder + "/rnn-np.W.npy")
 		vocab_size = len(V[0])
 		hdim = len(U[0])
-
-		dev_size = 1000
 
 		r = RNN(vocab_size, hdim, vocab_size)
 		r.U = U
@@ -904,10 +903,10 @@ if __name__ == "__main__":
 		num_to_word = dict(enumerate(vocab.index[:vocab_size]))
 		word_to_num = invert_dict(num_to_word)
 
-		# Load the dev set (for tuning hyperparameters)
-		docs = load_lm_np_dataset(data_folder + '/wiki-dev.txt')
-		S_np_dev = docs_to_indices(docs, word_to_num, 1, 0)
-		X_np_dev, D_np_dev = seqs_to_lmnpXY(S_np_dev)
+		# Load the test set (for evaluation)
+		docs = load_lm_dataset(data_folder + '/wiki-test.txt')
+		S_test = docs_to_indices(docs, word_to_num, 1, 0)
+		X_test, D_test = seqs_to_lmXY(S_test)
 
-		X_np_dev = X_np_dev[:dev_size]
-		D_np_dev = D_np_dev[:dev_size]
+		acc = sum([r.compute_acc_np(X_test[i], D_test[i]) for i in range(len(X_test))]) / len(X_test)
+		print("Accuracy: %.03f" % acc)
