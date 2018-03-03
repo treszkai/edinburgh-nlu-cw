@@ -88,3 +88,32 @@ Mean loss: 4.665231887752031
 Unadjusted perplexity: 106.190
 Adjusted perplexity: 145.025
 ```
+
+## Question 3a
+Testing implementation
+```
+$> python rnn.py train-np data 25 5 0.5
+```
+
+```
+Retained 2000 words from 9954 (88.81% of all tokens)
+
+
+Training model for 1 epochs
+training set: 1000 sentences (batch size 100)
+Optimizing loss on 1000 sentences
+Vocab size: 2000
+Hidden units: 25
+Steps for back propagation: 5
+Initial learning rate set to 0.5, annealing set to 5
+
+calculating initial mean loss on dev set: 7.076089209069355
+calculating initial acc on dev set: 0.0
+
+epoch 1, learning rate 0.5000   instance 1000   epoch done in 19.49 seconds     new loss: 0.7753777760495294    new acc: 0.481
+
+training finished after reaching maximum of 1 epochs
+best observed loss was 0.7753777760495294, acc 0.481, at epoch 1
+setting U, V, W to matrices from best epoch
+Accuracy: 0.481
+```
