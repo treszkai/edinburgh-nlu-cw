@@ -80,7 +80,7 @@ Adjusted for missing vocab: 114.927
 
 Evaluating model on full test set:
 ```
-$> python rnn.py predict-lm data models
+$> python rnn.py predict-q2 data models
 ```
 
 ```
