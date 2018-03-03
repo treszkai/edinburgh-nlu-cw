@@ -109,10 +109,6 @@ class RNN(object):
         no return values
         '''
 
-        self.deltaU = np.zeros_like(self.deltaU)
-        self.deltaV = np.zeros_like(self.deltaV)
-        self.deltaW = np.zeros_like(self.deltaW)
-
         for t in reversed(range(len(x))):
             d_onehot = make_onehot(d[t], self.out_vocab_size)
             net_out_t_bar = d_onehot - y[t]
@@ -616,6 +612,8 @@ if __name__ == "__main__":
         train_size = 1000
         dev_size = 1000
         vocab_size = 2000
+        epochs = 10
+        log=True
 
         hdim = int(sys.argv[3]) if len(sys.argv) >= 4 else None
         lookback = int(sys.argv[4]) if len(sys.argv) >= 5 else None
@@ -657,7 +655,7 @@ if __name__ == "__main__":
         def _train():
             r = RNN(vocab_size, hdim, vocab_size)
             run_loss = r.train(X_train, D_train, X_dev, D_dev,
-                               back_steps=lookback, learning_rate=lr, epochs=10)
+                               back_steps=lookback, learning_rate=lr, epochs=epochs, log=log)
             adjusted_loss = adjust_loss(run_loss, fraction_lost, q)
 
             print("Unadjusted: %.03f" % np.exp(run_loss))
