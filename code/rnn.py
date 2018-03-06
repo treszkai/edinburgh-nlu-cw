@@ -3,6 +3,7 @@ import sys
 import time
 import numpy as np
 import pandas as pd
+import itertools
 
 from utils import *
 from rnnmath import *
@@ -673,7 +674,7 @@ if __name__ == "__main__":
             best_loss = -1
             best_params = None
 
-            for hdim, lookback, lr in zip(hdims, lookbacks, lrs):
+            for hdim, lookback, lr in itertools.product(hdims, lookbacks, lrs):
                 run_loss, adjusted_loss = _train()
                 experiments.append({
                     'hdim': hdim,
