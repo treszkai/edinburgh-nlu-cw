@@ -191,8 +191,7 @@ class RNN(object):
 		'''
 
 		y, s = self.predict(x)
-		steps = min(len(x), steps)
-
+		
 		for t in reversed(range(len(x))):
 			# print("time {0}".format(t))
 			##########################
@@ -209,7 +208,7 @@ class RNN(object):
 			self.deltaV += np.outer(delta_in, x_one)
 			self.deltaU += np.outer(delta_in, s[t-1])
 
-			for tau in range(1, steps+1):
+			for tau in range(1, min(t, steps) +1):
 				delta_in = np.dot(delta_in, self.U)
 				delta_in = np.multiply(delta_in, grad(s[t-tau]))
 				x_one = make_onehot(x[t-tau], self.vocab_size)
@@ -241,8 +240,7 @@ class RNN(object):
 		##########################
 		y, s = self.predict(x)
 		d_one = make_onehot(d[0], self.out_vocab_size)
-		steps = min(len(x), steps)
-
+		
 		for t in reversed(range(len(x))):
 			
 			if t == len(y) - 1:
@@ -258,7 +256,7 @@ class RNN(object):
 			self.deltaV += np.outer(delta_in, x_one)
 			self.deltaU += np.outer(delta_in, s[t-1])
 
-			for tau in range(1, steps+1):
+			for tau in range(1, min(t, steps) + 1):
 				delta_in = np.dot(delta_in, self.U)
 				delta_in = np.multiply(delta_in, grad(s[t-tau]))
 				x_one = make_onehot(x[t-tau], self.vocab_size)
