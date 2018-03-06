@@ -406,10 +406,10 @@ class RNN(object):
                 stdout.write("\tinstance 1")
             for i in range(len(X)):
                 c = i + 1
-                if log:
-                    stdout.write("\r")
-                    stdout.write("{0}".format(c))
-                    stdout.flush()
+                # if log:
+                #     stdout.write("\r")
+                #     stdout.write("{0}".format(c))
+                #     stdout.flush()
                 p = permutation[i]
                 x_p = X[p]
                 d_p = D[p]
@@ -550,10 +550,10 @@ class RNN(object):
                 stdout.write("\tinstance 1")
             for i in range(len(X)):
                 c = i + 1
-                if log:
-                    stdout.write("\r")
-                    stdout.write("{0}".format(c))
-                    stdout.flush()
+                # if log:
+                #     stdout.write("\r")
+                #     stdout.write("{0}".format(c))
+                #     stdout.flush()
                 p = permutation[i]
                 x_p = X[p]
                 d_p = D[p]
