@@ -291,19 +291,19 @@ class RNN(object):
         return 1 if np.argmax(y[-1]) == d[0] else 0
 
 
-	def compare_num_pred(self, x, d):
-		'''
-		compute the probability between predictions the desired output d[0] and it's (re)inflected form, d[1].
-		first predicts the output for x using the RNN, then compare the probability of d[0] and d[1].
+    def compare_num_pred(self, x, d):
+        '''
+        compute the probability between predictions the desired output d[0] and it's (re)inflected form, d[1].
+        first predicts the output for x using the RNN, then compare the probability of d[0] and d[1].
 
-		x		list of words, as indices, e.g.: [0, 4, 2]
-		d		the desired verb and its (re)inflected form (singular/plural), as indices, e.g.: [7, 8]
+        x		list of words, as indices, e.g.: [0, 4, 2]
+        d		the desired verb and its (re)inflected form (singular/plural), as indices, e.g.: [7, 8]
 
-		return 1 if p(d[0]) > p(d[1]), 0 otherwise
-		'''
+        return 1 if p(d[0]) > p(d[1]), 0 otherwise
+        '''
 
-		y, _ = self.predict(x)
-		return 1 if y[-1, d[0]] > y[-1, d[1]] else 0
+        y, _ = self.predict(x)
+        return 1 if y[-1, d[0]] > y[-1, d[1]] else 0
 
 
     def compute_acc_lmnp(self, X_dev, D_dev):
