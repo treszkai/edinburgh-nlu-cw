@@ -157,19 +157,15 @@ class RNN(object):
 		##########################
 		d_one = make_onehot(d[0], self.out_vocab_size)
 		
-		for t in reversed(range(len(y))):
-			if t == len(y) - 1:
-				delta_out = d_one - y[t]
-				self.deltaW += np.outer(delta_out, s[t])
-				delta_in = np.dot(delta_out, self.W) # (1, hidden_dims)
-				delta_in = np.multiply(delta_in, grad(s[t]))
-			else:
-				delta_in = np.dot(delta_in, self.U)
-				delta_in = np.multiply(delta_in, grad(s[t]))
-			
-			x_one = make_onehot(x[t], self.vocab_size)
-			self.deltaV += np.outer(delta_in, x_one)
-			self.deltaU += np.outer(delta_in, s[t-1])
+		t = len(y) - 1
+		delta_out = d_one - y[t]
+		self.deltaW += np.outer(delta_out, s[t])
+		delta_in = np.dot(delta_out, self.W) # (1, hidden_dims)
+		delta_in = np.multiply(delta_in, grad(s[t]))
+	
+		x_one = make_onehot(x[t], self.vocab_size)
+		self.deltaV += np.outer(delta_in, x_one)
+		self.deltaU += np.outer(delta_in, s[t-1])
 			
 		
 	def acc_deltas_bptt(self, x, d, y, s, steps):
@@ -207,7 +203,7 @@ class RNN(object):
 			x_one = make_onehot(x[t], self.vocab_size)
 			self.deltaV += np.outer(delta_in, x_one)
 			self.deltaU += np.outer(delta_in, s[t-1])
-
+			
 			for tau in range(1, min(t, steps) +1):
 				delta_in = np.dot(delta_in, self.U)
 				delta_in = np.multiply(delta_in, grad(s[t-tau]))
@@ -241,27 +237,22 @@ class RNN(object):
 		y, s = self.predict(x)
 		d_one = make_onehot(d[0], self.out_vocab_size)
 		
-		for t in reversed(range(len(x))):
-			
-			if t == len(y) - 1:
-				delta_out = d_one - y[t]
-				self.deltaW += np.outer(delta_out, s[t])
-				delta_in = np.dot(delta_out, self.W) # (1, hidden_dims)
-				delta_in = np.multiply(delta_in, grad(s[t]))
-			else:
-				delta_in = np.dot(delta_in, self.U)
-				delta_in = np.multiply(delta_in, grad(s[t]))
-			
-			x_one = make_onehot(x[t], self.vocab_size)
+		t = len(y) - 1
+		delta_out = d_one - y[t]
+		self.deltaW += np.outer(delta_out, s[t])
+		delta_in = np.dot(delta_out, self.W)
+		delta_in = np.multiply(delta_in, grad(s[t]))
+		
+		x_one = make_onehot(x[t], self.vocab_size)
+		self.deltaV += np.outer(delta_in, x_one)
+		self.deltaU += np.outer(delta_in, s[t-1])
+		
+		for tau in range(1, min(t, steps) + 1):
+			delta_in = np.dot(delta_in, self.U)
+			delta_in = np.multiply(delta_in, grad(s[t-tau]))
+			x_one = make_onehot(x[t-tau], self.vocab_size)
 			self.deltaV += np.outer(delta_in, x_one)
-			self.deltaU += np.outer(delta_in, s[t-1])
-
-			for tau in range(1, min(t, steps) + 1):
-				delta_in = np.dot(delta_in, self.U)
-				delta_in = np.multiply(delta_in, grad(s[t-tau]))
-				x_one = make_onehot(x[t-tau], self.vocab_size)
-				self.deltaV += np.outer(delta_in, x_one)
-				self.deltaU += np.outer(delta_in, s[t-tau-1])
+			self.deltaU += np.outer(delta_in, s[t-tau-1])
 
 
 	def compute_loss(self, x, d):
