@@ -141,11 +141,21 @@ class RNN(object):
 
         no return values
         '''
-        pass
-    ##########################
-    # --- your code here --- #
-    ##########################
+        d_one = make_onehot(d[0], self.out_vocab_size)
 
+        for t in reversed(range(len(y))):
+            if t == len(y) - 1:
+                delta_out = d_one - y[t]
+                self.deltaW += np.outer(delta_out, s[t])
+                delta_in = np.dot(delta_out, self.W)  # (1, hidden_dims)
+                delta_in = np.multiply(delta_in, grad(s[t]))
+            else:
+                delta_in = np.dot(delta_in, self.U)
+                delta_in = np.multiply(delta_in, grad(s[t]))
+
+            x_one = make_onehot(x[t], self.vocab_size)
+            self.deltaV += np.outer(delta_in, x_one)
+            self.deltaU += np.outer(delta_in, s[t - 1])
 
     def acc_deltas_bptt(self, x, d, y, s, steps):
         '''
@@ -176,7 +186,7 @@ class RNN(object):
             self.deltaV += np.outer(delta_in, x_one)
             self.deltaU += np.outer(delta_in, s[t - 1])
 
-            for tau in range(1, steps + 1):
+            for tau in range(1, min(t, steps) + 1):
                 delta_in = np.dot(delta_in, self.U)
                 delta_in = np.multiply(delta_in, grad(s[t - tau]))
                 x_one = make_onehot(x[t - tau], self.vocab_size)
@@ -201,10 +211,30 @@ class RNN(object):
 
         no return values
         '''
-        pass
-    ##########################
-    # --- your code here --- #
-    ##########################
+        y, s = self.predict(x)
+        d_one = make_onehot(d[0], self.out_vocab_size)
+
+        for t in reversed(range(len(x))):
+
+            if t == len(y) - 1:
+                delta_out = d_one - y[t]
+                self.deltaW += np.outer(delta_out, s[t])
+                delta_in = np.dot(delta_out, self.W)  # (1, hidden_dims)
+                delta_in = np.multiply(delta_in, grad(s[t]))
+            else:
+                delta_in = np.dot(delta_in, self.U)
+                delta_in = np.multiply(delta_in, grad(s[t]))
+
+            x_one = make_onehot(x[t], self.vocab_size)
+            self.deltaV += np.outer(delta_in, x_one)
+            self.deltaU += np.outer(delta_in, s[t - 1])
+
+            for tau in range(1, min(t, steps) + 1):
+                delta_in = np.dot(delta_in, self.U)
+                delta_in = np.multiply(delta_in, grad(s[t - tau]))
+                x_one = make_onehot(x[t - tau], self.vocab_size)
+                self.deltaV += np.outer(delta_in, x_one)
+                self.deltaU += np.outer(delta_in, s[t - tau - 1])
 
 
     def compute_loss(self, x, d):
@@ -239,11 +269,12 @@ class RNN(object):
 
         loss = 0.
 
-        ##########################
-        # --- your code here --- #
-        ##########################
+        y, _ = self.predict(x)
+        d_one = make_onehot(d[0], self.out_vocab_size)
+        loss -= np.dot(d_one, np.log(y[-1]))
 
         return loss
+
 
     def compute_acc_np(self, x, d):
         '''
@@ -256,28 +287,24 @@ class RNN(object):
         return 1 if argmax(y[t]) == d[0], 0 otherwise
         '''
 
-        ##########################
-        # --- your code here --- #
-        ##########################
+        y, _ = self.predict(x)
+        return 1 if np.argmax(y[-1]) == d[0] else 0
 
-        return 0
 
-    def compare_num_pred(self, x, d):
-        '''
-        compute the probability between predictions the desired output d[0] and it's (re)inflected form, d[1].
-        first predicts the output for x using the RNN, then compare the probability of d[0] and d[1].
+	def compare_num_pred(self, x, d):
+		'''
+		compute the probability between predictions the desired output d[0] and it's (re)inflected form, d[1].
+		first predicts the output for x using the RNN, then compare the probability of d[0] and d[1].
 
-        x		list of words, as indices, e.g.: [0, 4, 2]
-        d		the desired verb and its (re)inflected form (singular/plural), as indices, e.g.: [7, 8]
+		x		list of words, as indices, e.g.: [0, 4, 2]
+		d		the desired verb and its (re)inflected form (singular/plural), as indices, e.g.: [7, 8]
 
-        return 1 if p(d[0]) > p(d[1]), 0 otherwise
-        '''
+		return 1 if p(d[0]) > p(d[1]), 0 otherwise
+		'''
 
-        ##########################
-        # --- your code here --- #
-        ##########################
+		y, _ = self.predict(x)
+		return 1 if y[-1, d[0]] > y[-1, d[1]] else 0
 
-        return 0
 
     def compute_acc_lmnp(self, X_dev, D_dev):
         '''
@@ -666,9 +693,9 @@ if __name__ == "__main__":
 
 
         if is_param_search:
-            hdims = [25, 50]
+            hdims = [25, 50, 100]
             lookbacks = [0, 2, 5]
-            lrs = [.5, .1]
+            lrs = [1, .5, .1, .05]
 
             experiments = []
             best_loss = -1
