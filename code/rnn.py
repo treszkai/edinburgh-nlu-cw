@@ -207,30 +207,23 @@ class RNN(object):
 
         no return values
         '''
-        y, s = self.predict(x)
         d_one = make_onehot(d[0], self.out_vocab_size)
+        delta_out = d_one - y[-1]
 
-        for t in reversed(range(len(x))):
+        self.deltaW += np.outer(delta_out, s[-2])
 
-            if t == len(y) - 1:
-                delta_out = d_one - y[t]
-                self.deltaW += np.outer(delta_out, s[t])
-                delta_in = np.dot(delta_out, self.W)  # (1, hidden_dims)
-                delta_in = np.multiply(delta_in, grad(s[t]))
-            else:
-                delta_in = np.dot(delta_in, self.U)
-                delta_in = np.multiply(delta_in, grad(s[t]))
+        s_t_bar = delta_out @ self.W
+        net_in_t_bar = s_t_bar * grad(s[-2])
 
-            x_one = make_onehot(x[t], self.vocab_size)
-            self.deltaV += np.outer(delta_in, x_one)
-            self.deltaU += np.outer(delta_in, s[t - 1])
+        self.deltaU += np.outer(net_in_t_bar, s[-3])
+        self.deltaV[:, x[-1]] += net_in_t_bar
 
-            for tau in range(1, min(t, steps) + 1):
-                delta_in = np.dot(delta_in, self.U)
-                delta_in = np.multiply(delta_in, grad(s[t - tau]))
-                x_one = make_onehot(x[t - tau], self.vocab_size)
-                self.deltaV += np.outer(delta_in, x_one)
-                self.deltaU += np.outer(delta_in, s[t - tau - 1])
+        for tau in range(1, min(len(x) - 1, steps) + 1):
+            net_in_t_bar = np.dot(net_in_t_bar, self.U)
+            net_in_t_bar = np.multiply(net_in_t_bar, grad(s[-2 - tau]))
+            x_one = make_onehot(x[-1 - tau], self.vocab_size)
+            self.deltaV += np.outer(net_in_t_bar, x_one)
+            self.deltaU += np.outer(net_in_t_bar, s[-2 - tau - 1])
 
 
     def compute_loss(self, x, d):
