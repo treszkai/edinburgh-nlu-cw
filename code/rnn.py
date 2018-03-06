@@ -878,7 +878,7 @@ if __name__ == "__main__":
 		rnn_folder = sys.argv[3]
 
 		# get saved RNN matrices and setup RNN
-		U,V,W = np.load(rnn_folder + "/rnn-np.U.npy"), np.load(rnn_folder + "/rnn-np.V.npy"), np.load(rnn_folder + "/rnn-np.W.npy")
+		U,V,W = np.load(rnn_folder + "/rnn.U.npy"), np.load(rnn_folder + "/rnn.V.npy"), np.load(rnn_folder + "/rnn.W.npy")
 		vocab_size = len(V[0])
 		hdim = len(U[0])
 
@@ -893,9 +893,9 @@ if __name__ == "__main__":
 		word_to_num = invert_dict(num_to_word)
 
 		# Load the test set (for evaluation)
-		docs = load_lm_dataset(data_folder + '/wiki-test.txt')
+		docs = load_lm_np_dataset(data_folder + '/wiki-test.txt')
 		S_test = docs_to_indices(docs, word_to_num, 1, 0)
-		X_test, D_test = seqs_to_lmXY(S_test)
+		X_test, D_test = seqs_to_lmnpXY(S_test)
 
-		acc = sum([r.compute_acc_np(X_test[i], D_test[i]) for i in range(len(X_test))]) / len(X_test)
+		acc = r.compute_acc_lmnp(X_test, D_test)
 		print("Accuracy: %.03f" % acc)
