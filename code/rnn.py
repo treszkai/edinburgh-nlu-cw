@@ -49,6 +49,17 @@ class RNN(object):
         self.deltaV = np.zeros((self.hidden_dims, self.vocab_size))
         self.deltaW = np.zeros((self.out_vocab_size, self.hidden_dims))
 
+    def save_weights(self, dir='models', suffix=''):
+        '''
+        Save current state of matrices U, V, and W.
+        '''
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+
+        np.save(os.path.join(dir, 'rnn{}.U.npy'.format(suffix)), self.U)
+        np.save(os.path.join(dir, 'rnn{}.V.npy'.format(suffix)), self.V)
+        np.save(os.path.join(dir, 'rnn{}.W.npy'.format(suffix)), self.W)
+
     def apply_deltas(self, learning_rate):
         '''
         update the RNN's weight matrices with corrections accumulated over some training instances
@@ -406,10 +417,10 @@ class RNN(object):
                 stdout.write("\tinstance 1")
             for i in range(len(X)):
                 c = i + 1
-                # if log:
-                #     stdout.write("\r")
-                #     stdout.write("{0}".format(c))
-                #     stdout.flush()
+                if log:
+                    stdout.write("\r")
+                    stdout.write("{0}".format(c))
+                    stdout.flush()
                 p = permutation[i]
                 x_p = X[p]
                 d_p = D[p]
@@ -626,10 +637,10 @@ if __name__ == "__main__":
         code for training language model.
         change this to different values, or use it to get you started with your own testing class
         '''
-        train_size = 1000
+        train_size = 25000
         dev_size = 1000
         vocab_size = 2000
-        epochs = 10
+        epochs = 100
         log=True
 
         hdim = int(sys.argv[3]) if len(sys.argv) >= 4 else None
@@ -669,8 +680,9 @@ if __name__ == "__main__":
         # this is the best expected loss out of that set
         q = vocab.freq[vocab_size] / sum(vocab.freq[vocab_size:])
 
-        def _train():
+        def _train(hdim, lookback, lr):
             r = RNN(vocab_size, hdim, vocab_size)
+
             run_loss = r.train(X_train, D_train, X_dev, D_dev,
                                back_steps=lookback, learning_rate=lr, epochs=epochs, log=log)
             adjusted_loss = adjust_loss(run_loss, fraction_lost, q)
@@ -678,7 +690,7 @@ if __name__ == "__main__":
             print("Unadjusted: %.03f" % np.exp(run_loss))
             print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
 
-            return run_loss, adjusted_loss
+            return r, run_loss, adjusted_loss
 
 
         if is_param_search:
@@ -691,7 +703,7 @@ if __name__ == "__main__":
             best_params = None
 
             for hdim, lookback, lr in itertools.product(hdims, lookbacks, lrs):
-                run_loss, adjusted_loss = _train()
+                run_loss, adjusted_loss = _train(hdim, lookback, lr)
                 experiments.append({
                     'hdim': hdim,
                     'lookback': lookback,
@@ -713,7 +725,8 @@ if __name__ == "__main__":
                    \nlearning rate = {}'.format(*best_params))
 
         else:
-            _ = _train()
+            r, _, _ = _train(hdim, lookback, lr)
+            r.save_weights()
 
     if mode == "train-np":
         '''
@@ -757,21 +770,23 @@ if __name__ == "__main__":
         ##########################
         # --- your code here --- #
         ##########################
-
-        acc = 0.
-
+        r = RNN(vocab_size, hdim, vocab_size)
+        run_loss = r.train_np(X_train, D_train, X_dev, D_dev, 
+                           back_steps=lookback, learning_rate=lr, epochs=1)
+        r.save_weights(suffix='-np')
+        acc = sum([r.compute_acc_np(X_dev[i], D_dev[i]) for i in range(len(X_dev))]) / len(X_dev)
         print("Accuracy: %.03f" % acc)
 
-    if mode == "predict-lm":
+    
+    if mode == "predict-q2":
+        
         data_folder = sys.argv[2]
         rnn_folder = sys.argv[3]
 
         # get saved RNN matrices and setup RNN
-        U, V, W = np.load(rnn_folder + "/rnn.U.npy"), np.load(rnn_folder + "/rnn.V.npy"), np.load(rnn_folder + "/rnn.W.npy")
+        U,V,W = np.load(rnn_folder + "/rnn.U.npy"), np.load(rnn_folder + "/rnn.V.npy"), np.load(rnn_folder + "/rnn.W.npy")
         vocab_size = len(V[0])
         hdim = len(U[0])
-
-        dev_size = 1000
 
         r = RNN(vocab_size, hdim, vocab_size)
         r.U = U
@@ -779,19 +794,55 @@ if __name__ == "__main__":
         r.W = W
 
         # get vocabulary
-        vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0,
-                              names=['count', 'freq'], )
+        vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0, names=['count', 'freq'], )
         num_to_word = dict(enumerate(vocab.index[:vocab_size]))
         word_to_num = invert_dict(num_to_word)
 
-        # Load the dev set (for tuning hyperparameters)
-        docs = load_lm_np_dataset(data_folder + '/wiki-dev.txt')
-        S_np_dev = docs_to_indices(docs, word_to_num, 1, 0)
-        X_np_dev, D_np_dev = seqs_to_lmnpXY(S_np_dev)
+        # calculate loss vocabulary words due to vocab_size
+        fraction_lost = fraq_loss(vocab, word_to_num, vocab_size)
+        print("Retained %d words from %d (%.02f%% of all tokens)\n" % (vocab_size, len(vocab), 100*(1-fraction_lost)))
+        
+        # q = best unigram frequency from omitted vocab
+        # this is the best expected loss out of that set
+        q = vocab.freq[vocab_size] / sum(vocab.freq[vocab_size:])
 
-        X_np_dev = X_np_dev[:dev_size]
-        D_np_dev = D_np_dev[:dev_size]
+        # Load the test set (for evaluation)
+        docs = load_lm_dataset(data_folder + '/wiki-test.txt')
+        S_test = docs_to_indices(docs, word_to_num, 1, 0)
+        X_test, D_test = seqs_to_lmXY(S_test)
 
-        np_acc = r.compute_acc_lmnp(X_np_dev, D_np_dev)
+        mean_loss = r.compute_mean_loss(X_test, D_test)
+        adjusted_loss = adjust_loss(mean_loss, fraction_lost, q)
 
-        print('Number prediction accuracy:', np_acc)
+        print('Mean loss:', mean_loss)
+        print("Unadjusted perplexity: %.03f" % np.exp(mean_loss))
+        print("Adjusted perplexity: %.03f" % np.exp(adjusted_loss))
+
+
+    if mode == "predict-lm":
+        
+        data_folder = sys.argv[2]
+        rnn_folder = sys.argv[3]
+
+        # get saved RNN matrices and setup RNN
+        U,V,W = np.load(rnn_folder + "/rnn.U.npy"), np.load(rnn_folder + "/rnn.V.npy"), np.load(rnn_folder + "/rnn.W.npy")
+        vocab_size = len(V[0])
+        hdim = len(U[0])
+
+        r = RNN(vocab_size, hdim, vocab_size)
+        r.U = U
+        r.V = V
+        r.W = W
+
+        # get vocabulary
+        vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0, names=['count', 'freq'], )
+        num_to_word = dict(enumerate(vocab.index[:vocab_size]))
+        word_to_num = invert_dict(num_to_word)
+
+        # Load the test set (for evaluation)
+        docs = load_lm_np_dataset(data_folder + '/wiki-test.txt')
+        S_test = docs_to_indices(docs, word_to_num, 1, 0)
+        X_test, D_test = seqs_to_lmnpXY(S_test)
+
+        acc = r.compute_acc_lmnp(X_test, D_test)
+        print("Accuracy: %.03f" % acc)
