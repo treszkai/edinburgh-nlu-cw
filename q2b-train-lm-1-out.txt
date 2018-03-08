@@ -1,0 +1,129 @@
+/Users/L/miniconda3/envs/nlu/bin/python /Users/L/Sync/Documents/Edinburgh/NLU/nlu-cw/code/rnn.py train-lm ../data 25 5 1
+seed: 2018
+Retained 2000 words from 9954 (88.81% of all tokens)
+
+
+Training model for 100 epochs
+training set: 25000 sentences (batch size 100)
+Optimizing loss on 1000 sentences
+Vocab size: 2000
+Hidden units: 25
+Steps for back propagation: 5
+Initial learning rate set to 1.0, annealing set to 5
+
+calculating initial mean loss on dev set: 7.798662515757492
+
+25000	epoch done in 421.03 seconds	new loss: 4.951611565540853
+25000	epoch done in 395.74 seconds	new loss: 4.9067223044650845
+25000	epoch done in 363.29 seconds	new loss: 4.582617619474278
+25000	epoch done in 360.56 seconds	new loss: 4.5509416102331945
+25000	epoch done in 372.98 seconds	new loss: 4.542392100211175
+25000	epoch done in 367.07 seconds	new loss: 4.468700640333618
+25000	epoch done in 374.72 seconds	new loss: 4.450632941914471
+25000	epoch done in 362.24 seconds	new loss: 4.441726350368897
+25000	epoch done in 374.92 seconds	new loss: 4.474933592259232
+25000	epoch done in 366.60 seconds	new loss: 4.407352651417308
+25000	epoch done in 374.62 seconds	new loss: 4.3884729827552835
+25000	epoch done in 373.86 seconds	new loss: 4.396045722498667
+25000	epoch done in 363.18 seconds	new loss: 4.362286633819456
+25000	epoch done in 362.25 seconds	new loss: 4.358885646246078
+25000	epoch done in 363.33 seconds	new loss: 4.348033864536692
+25000	epoch done in 361.32 seconds	new loss: 4.368884777199208
+25000	epoch done in 362.05 seconds	new loss: 4.344439856534986
+25000	epoch done in 361.69 seconds	new loss: 4.34605191544821
+25000	epoch done in 371.31 seconds	new loss: 4.329191250818529
+25000	epoch done in 365.81 seconds	new loss: 4.336680603401362
+25000	epoch done in 364.16 seconds	new loss: 4.3405259863901815
+25000	epoch done in 366.31 seconds	new loss: 4.330535931383206
+25000	epoch done in 360.01 seconds	new loss: 4.325476277354716
+25000	epoch done in 374.96 seconds	new loss: 4.3134010845933695
+25000	epoch done in 361.96 seconds	new loss: 4.307467434458603
+25000	epoch done in 362.99 seconds	new loss: 4.307229272347379
+25000	epoch done in 364.88 seconds	new loss: 4.306915496429315
+25000	epoch done in 369.59 seconds	new loss: 4.296870233938172
+25000	epoch done in 367.36 seconds	new loss: 4.307333476235699
+25000	epoch done in 371.40 seconds	new loss: 4.3146772929238395
+25000	epoch done in 363.22 seconds	new loss: 4.3016928727661785
+25000	epoch done in 371.37 seconds	new loss: 4.289630659546408
+25000	epoch done in 371.20 seconds	new loss: 4.288447578943214
+25000	epoch done in 367.91 seconds	new loss: 4.290771042410608
+25000	epoch done in 368.25 seconds	new loss: 4.283423747747332
+25000	epoch done in 370.82 seconds	new loss: 4.281677076126035
+25000	epoch done in 370.16 seconds	new loss: 4.278756997332878
+25000	epoch done in 363.51 seconds	new loss: 4.284975260371678
+25000	epoch done in 361.49 seconds	new loss: 4.286859236878904
+25000	epoch done in 364.27 seconds	new loss: 4.272655932735297
+25000	epoch done in 360.01 seconds	new loss: 4.281994419896182
+25000	epoch done in 363.50 seconds	new loss: 4.280333625457547
+25000	epoch done in 364.09 seconds	new loss: 4.2764787047821775
+25000	epoch done in 363.06 seconds	new loss: 4.270846417093449
+25000	epoch done in 370.15 seconds	new loss: 4.268021264906885
+25000	epoch done in 360.88 seconds	new loss: 4.281457660688276
+25000	epoch done in 369.45 seconds	new loss: 4.26896166568077
+25000	epoch done in 362.35 seconds	new loss: 4.267318901417769
+25000	epoch done in 363.42 seconds	new loss: 4.2636568960462835
+25000	epoch done in 366.06 seconds	new loss: 4.268344411573149
+25000	epoch done in 361.64 seconds	new loss: 4.2633547850079765
+25000	epoch done in 362.93 seconds	new loss: 4.260611904413878
+25000	epoch done in 367.06 seconds	new loss: 4.276984852797986
+25000	epoch done in 366.08 seconds	new loss: 4.263180022982263
+25000	epoch done in 370.32 seconds	new loss: 4.263600757507759
+25000	epoch done in 372.78 seconds	new loss: 4.256311613438009
+25000	epoch done in 375.42 seconds	new loss: 4.2574838966913715
+25000	epoch done in 369.24 seconds	new loss: 4.256097740093213
+25000	epoch done in 363.46 seconds	new loss: 4.253256681421917
+25000	epoch done in 372.80 seconds	new loss: 4.254224542129545
+25000	epoch done in 365.99 seconds	new loss: 4.251617042732484
+25000	epoch done in 362.95 seconds	new loss: 4.252839409073204
+25000	epoch done in 362.33 seconds	new loss: 4.251713678128455
+25000	epoch done in 365.91 seconds	new loss: 4.251187546595058
+25000	epoch done in 366.43 seconds	new loss: 4.251580040958536
+25000	epoch done in 364.44 seconds	new loss: 4.24751814640865
+25000	epoch done in 398.42 seconds	new loss: 4.24756280454752
+25000	epoch done in 401.49 seconds	new loss: 4.257685890786476
+25000	epoch done in 376.93 seconds	new loss: 4.246705985530512
+25000	epoch done in 395.86 seconds	new loss: 4.245990146632048
+25000	epoch done in 432.58 seconds	new loss: 4.2482432685568785
+25000	epoch done in 495.70 seconds	new loss: 4.245281347422453
+25000	epoch done in 489.80 seconds	new loss: 4.248910614478585
+25000	epoch done in 469.07 seconds	new loss: 4.251433292720922
+25000	epoch done in 400.13 seconds	new loss: 4.2425872743566995
+25000	epoch done in 400.26 seconds	new loss: 4.242006587198647
+25000	epoch done in 377.51 seconds	new loss: 4.24368674257712
+25000	epoch done in 390.79 seconds	new loss: 4.241197130039286
+25000	epoch done in 397.45 seconds	new loss: 4.241820935393273
+25000	epoch done in 449.22 seconds	new loss: 4.239626417241049
+25000	epoch done in 434.65 seconds	new loss: 4.242602359087369
+25000	epoch done in 472.12 seconds	new loss: 4.241459565711881
+25000	epoch done in 466.41 seconds	new loss: 4.239077182070968
+25000	epoch done in 456.32 seconds	new loss: 4.24463197999733
+25000	epoch done in 451.55 seconds	new loss: 4.2387921540587
+25000	epoch done in 427.22 seconds	new loss: 4.242262533516708
+25000	epoch done in 468.40 seconds	new loss: 4.238065354666786
+25000	epoch done in 460.95 seconds	new loss: 4.235306658884231
+25000	epoch done in 448.02 seconds	new loss: 4.235061082407349
+25000	epoch done in 505.47 seconds	new loss: 4.23446913266269
+25000	epoch done in 448.14 seconds	new loss: 4.2345438544026655
+25000	epoch done in 432.17 seconds	new loss: 4.232935617253685
+25000	epoch done in 413.73 seconds	new loss: 4.232934799354619
+25000	epoch done in 419.00 seconds	new loss: 4.2320830016649955
+25000	epoch done in 419.88 seconds	new loss: 4.23187141280293
+25000	epoch done in 392.91 seconds	new loss: 4.231266674310888
+25000	epoch done in 391.98 seconds	new loss: 4.230658836518667
+25000	epoch done in 391.78 seconds	new loss: 4.230172207206106
+25000	epoch done in 417.23 seconds	new loss: 4.229345743168057
+25000	epoch done in 412.35 seconds	new loss: 4.23179220393318
+Traceback (most recent call last):
+  File "/Users/L/Sync/Documents/Edinburgh/NLU/nlu-cw/code/rnn.py", line 729, in <module>
+    r.save_weights()
+  File "/Users/L/Sync/Documents/Edinburgh/NLU/nlu-cw/code/rnn.py", line 56, in save_weights
+
+training finished after reaching maximum of 100 epochs
+best observed loss was 4.229345743168057, at epoch 99
+setting U, V, W to matrices from best epoch
+Unadjusted: 68.672
+    if not os.path.exists(dir):
+Adjusted for missing vocab: 88.777
+NameError: name 'os' is not defined
+
+Process finished with exit code 1

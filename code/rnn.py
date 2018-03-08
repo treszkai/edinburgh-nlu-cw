@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import itertools
+import os
 
 from utils import *
 from rnnmath import *
@@ -628,7 +629,7 @@ class RNN(object):
 if __name__ == "__main__":
     mode = sys.argv[1].lower()
     data_folder = sys.argv[2]
-    seed = 2018
+    seed = 2019
     print('seed: {}'.format(seed))
     np.random.seed(seed)
 
@@ -640,7 +641,7 @@ if __name__ == "__main__":
         train_size = 25000
         dev_size = 1000
         vocab_size = 2000
-        epochs = 100
+        epochs = 40
         log=True
 
         hdim = int(sys.argv[3]) if len(sys.argv) >= 4 else None

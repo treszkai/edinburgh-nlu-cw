@@ -1,0 +1,64 @@
+/Users/L/miniconda3/envs/nlu/bin/python /Users/L/Sync/Documents/Edinburgh/NLU/nlu-cw/code/rnn.py train-lm ../data 25 5 1
+Console output is saving to: /Users/L/Sync/Documents/Edinburgh/NLU/nlu-cw/train-lm-out.txt
+seed: 2019
+Retained 2000 words from 9954 (88.81% of all tokens)
+
+
+Training model for 40 epochs
+training set: 25000 sentences (batch size 100)
+Optimizing loss on 1000 sentences
+Vocab size: 2000
+Hidden units: 25
+Steps for back propagation: 5
+Initial learning rate set to 1.0, annealing set to 5
+
+calculating initial mean loss on dev set: 8.00338116216771
+
+25000	epoch done in 407.13 seconds	new loss: 4.842770055743925
+25000	epoch done in 404.63 seconds	new loss: 4.842541666671183
+25000	epoch done in 437.42 seconds	new loss: 4.633576436967772
+25000	epoch done in 390.92 seconds	new loss: 4.565889004763209
+25000	epoch done in 401.71 seconds	new loss: 4.527051928218304
+25000	epoch done in 405.64 seconds	new loss: 4.49880908158899
+25000	epoch done in 399.39 seconds	new loss: 4.478114420169029
+25000	epoch done in 403.38 seconds	new loss: 4.44768033856668
+25000	epoch done in 392.14 seconds	new loss: 4.416948812533783
+25000	epoch done in 401.88 seconds	new loss: 4.419089115408261
+25000	epoch done in 411.50 seconds	new loss: 4.397512946688464
+25000	epoch done in 388.11 seconds	new loss: 4.380179328707286
+25000	epoch done in 400.10 seconds	new loss: 4.385566042685086
+25000	epoch done in 382.06 seconds	new loss: 4.364213091289827
+25000	epoch done in 403.46 seconds	new loss: 4.354823694260496
+25000	epoch done in 422.52 seconds	new loss: 4.376612136526675
+25000	epoch done in 389.20 seconds	new loss: 4.339827835175527
+25000	epoch done in 380.40 seconds	new loss: 4.343092329441356
+25000	epoch done in 432.25 seconds	new loss: 4.337589856894631
+25000	epoch done in 378.61 seconds	new loss: 4.328309673471001
+25000	epoch done in 369.99 seconds	new loss: 4.326579464475598
+25000	epoch done in 372.16 seconds	new loss: 4.314411950537779
+25000	epoch done in 374.85 seconds	new loss: 4.331580414917071
+25000	epoch done in 369.33 seconds	new loss: 4.3058197101301
+25000	epoch done in 368.49 seconds	new loss: 4.2978949865108955
+25000	epoch done in 369.34 seconds	new loss: 4.295472948889735
+25000	epoch done in 369.49 seconds	new loss: 4.306594276271279
+25000	epoch done in 372.52 seconds	new loss: 4.2936431059027775
+25000	epoch done in 375.06 seconds	new loss: 4.2826047139646
+25000	epoch done in 367.72 seconds	new loss: 4.278127926970142
+25000	epoch done in 368.42 seconds	new loss: 4.281363067736914
+25000	epoch done in 371.62 seconds	new loss: 4.273823644591111
+25000	epoch done in 370.77 seconds	new loss: 4.314112179135553
+25000	epoch done in 369.56 seconds	new loss: 4.26755103334105
+25000	epoch done in 372.90 seconds	new loss: 4.272810068910643
+25000	epoch done in 369.04 seconds	new loss: 4.276821712554971
+25000	epoch done in 367.77 seconds	new loss: 4.261488655099078
+25000	epoch done in 368.94 seconds	new loss: 4.2670372380817
+25000	epoch done in 369.23 seconds	new loss: 4.261839919425519
+25000	epoch done in 370.31 seconds	new loss: 4.255654250752828
+
+training finished after reaching maximum of 40 epochs
+best observed loss was 4.255654250752828, at epoch 40
+setting U, V, W to matrices from best epoch
+Unadjusted: 70.503
+Adjusted for missing vocab: 91.446
+
+Process finished with exit code 0
