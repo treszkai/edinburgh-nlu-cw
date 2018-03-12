@@ -117,3 +117,18 @@ best observed loss was 0.7753777760495294, acc 0.481, at epoch 1
 setting U, V, W to matrices from best epoch
 Accuracy: 0.481
 ```
+
+## Question 4b
+
+We think that the number prediction problem is a good proxy to investigate the power of the model to learn long-range dependencies.
+
+We want to test the following hypothesis:
+* Does the performance of the models degrade as the distance between the verb and subject increases?
+* Does LSTM perform better than our vanilla RNN for longer V - Subj distances?
+
+* Can we measure which parts of the input are more relevant for the number agreement decision?
+    - Does/Would an attention model recognise/capture which words/word indices are more important for number agreement?
+    
+We designed two experiments to answer these questions:
+* Quantitative....
+* Quanlitative attention...
