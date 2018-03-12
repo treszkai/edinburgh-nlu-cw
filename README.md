@@ -25,3 +25,12 @@ $> source activate nlu
 ```
 $> conda install numpy gensim pandas
 ```
+
+### Recommendations (feedfoward session)
+
+* Use LaTex.
+* Use citations with author names (not numbers!).
+* Audience is PhD students (we can assume reader is familiar with concepts). Should explain concepts out of the scope of the course.
+* q2a: explain/interpret the numbers.
+* q4b: you are welcome to submit your code, tell if you implemented it yourself or used off-the-shelf implementation. Specifics are not particularly interesting.
+* Comment the code may help the reader
