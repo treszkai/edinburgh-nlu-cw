@@ -724,8 +724,8 @@ if __name__ == "__main__":
 							back_steps=lookback, learning_rate=lr, epochs=10)
 			adjusted_loss = adjust_loss(run_loss, fraction_lost, q)
 
-			print("Unadjusted: %.03f" % np.exp(run_loss))
-			print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
+			print("Unadjusted: %.03f" % run_loss)
+			print("Adjusted for missing vocab: %.03f" % adjusted_loss)
 			return r, run_loss, adjusted_loss
 
 		# when hyperparameters are not given, do grid search
@@ -833,11 +833,7 @@ if __name__ == "__main__":
 			r = RNN(vocab_size, hdim, vocab_size)
 			run_loss = r.train_np(X_train, D_train, X_dev, D_dev, 
 								  back_steps=lookback, learning_rate=lr, epochs=10)
-			adjusted_loss = adjust_loss(run_loss, fraction_lost, q)
-
-			print("Unadjusted: %.03f" % np.exp(run_loss))
-			print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
-			return r, run_loss, adjusted_loss
+			return r, run_loss
 
 		# when hyperparameters are not given, do grid search
 		if hdim is None:
@@ -856,13 +852,12 @@ if __name__ == "__main__":
 				lookback = params[1]
 				lr = params[2]
 
-				r, run_loss, adjusted_loss = _train()
+				r, run_loss = _train()
 				experiment.append({
 					'hdim': hdim,
 					'lookback': lookback,
 					'lr': lr,
-					'loss': run_loss,
-					'loss_adjusted': adjusted_loss
+					'loss': run_loss
 				})
 
 				# keep track of the best model
@@ -883,7 +878,7 @@ if __name__ == "__main__":
 												best_params[2]))
 				
 		else:
-			r, run_loss, adjusted_loss = _train()
+			r, run_loss = _train()
 			r.save_weights(suffix='-np')
 
 	
@@ -926,6 +921,35 @@ if __name__ == "__main__":
 		print('Mean loss:', mean_loss)
 		print("Unadjusted perplexity: %.03f" % np.exp(mean_loss))
 		print("Adjusted perplexity: %.03f" % np.exp(adjusted_loss))
+
+
+	if mode == "predict-np":
+		
+		data_folder = sys.argv[2]
+		rnn_folder = sys.argv[3]
+
+		# get saved RNN matrices and setup RNN
+		U,V,W = np.load(rnn_folder + "/rnn-np.U.npy"), np.load(rnn_folder + "/rnn-np.V.npy"), np.load(rnn_folder + "/rnn-np.W.npy")
+		vocab_size = len(V[0])
+		hdim = len(U[0])
+
+		r = RNN(vocab_size, hdim, vocab_size)
+		r.U = U
+		r.V = V
+		r.W = W
+
+		# get vocabulary
+		vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0, names=['count', 'freq'], )
+		num_to_word = dict(enumerate(vocab.index[:vocab_size]))
+		word_to_num = invert_dict(num_to_word)
+
+		# Load the test set (for evaluation)
+		docs = load_np_dataset(data_folder + '/wiki-test.txt')
+		S_test = docs_to_indices(docs, word_to_num, 0, 0)
+		X_test, D_test = seqs_to_npXY(S_test)
+		
+		acc = sum([r.compute_acc_np(X_test[i], D_test[i]) for i in range(len(X_test))]) / len(X_test)
+		print("Accuracy: %.03f" % acc)
 
 
 	if mode == "predict-lm":
