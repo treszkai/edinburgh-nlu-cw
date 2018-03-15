@@ -972,10 +972,18 @@ if __name__ == "__main__":
 		num_to_word = dict(enumerate(vocab.index[:vocab_size]))
 		word_to_num = invert_dict(num_to_word)
 
+		# Load the dev set
+		docs = load_lm_np_dataset(data_folder + '/wiki-dev.txt')
+		S_dev = docs_to_indices(docs, word_to_num, 1, 0)
+		X_dev, D_dev = seqs_to_lmnpXY(S_dev)
+
 		# Load the test set (for evaluation)
 		docs = load_lm_np_dataset(data_folder + '/wiki-test.txt')
 		S_test = docs_to_indices(docs, word_to_num, 1, 0)
 		X_test, D_test = seqs_to_lmnpXY(S_test)
 
+		acc = r.compute_acc_lmnp(X_dev, D_dev)
+		print("Accuracy on dev set: %.03f" % acc)
+
 		acc = r.compute_acc_lmnp(X_test, D_test)
-		print("Accuracy: %.03f" % acc)
+		print("Accuracy on test set: %.03f" % acc)
