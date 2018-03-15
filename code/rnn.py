@@ -370,7 +370,7 @@ class RNN(object):
 		
 		return mean_loss
 
-	def save_weights(self, dir='models', suffix=''):
+	def save_weights(self, dir='../models', suffix=''):
 		'''
 		Save current state of matrices U, V, and W.
 		'''
@@ -781,13 +781,13 @@ if __name__ == "__main__":
 		starter code for parameter estimation.
 		change this to different values, or use it to get you started with your own testing class
 		'''
-		train_size = 1000
-		dev_size = 1000
-		vocab_size = 2000
 		
-		hdim = int(sys.argv[3])
-		lookback = int(sys.argv[4])
-		lr = float(sys.argv[5])
+		hdim = int(sys.argv[3]) if len(sys.argv) >= 4 else None
+		lookback = int(sys.argv[4]) if len(sys.argv) >= 5 else None
+		lr = float(sys.argv[5]) if len(sys.argv) >= 6 else None
+		train_size = int(sys.argv[6]) if len(sys.argv) >= 7 else 1000
+		dev_size = int(sys.argv[7]) if len(sys.argv) >= 8 else 1000
+		vocab_size = 2000
 		
 		# get the data set vocabulary
 		vocab = pd.read_table(data_folder + "/vocab.wiki.txt", header=None, sep="\s+", index_col=0, names=['count', 'freq'], )
@@ -817,12 +817,74 @@ if __name__ == "__main__":
 		##########################
 		# --- your code here --- #
 		##########################
-		r = RNN(vocab_size, hdim, vocab_size)
-		run_loss = r.train_np(X_train, D_train, X_dev, D_dev, 
+		#r = RNN(vocab_size, hdim, vocab_size)
+		'''run_loss = r.train_np(X_train, D_train, X_dev, D_dev, 
 						   back_steps=lookback, learning_rate=lr, epochs=1)
 		r.save_weights(suffix='-np')
 		acc = sum([r.compute_acc_np(X_dev[i], D_dev[i]) for i in range(len(X_dev))]) / len(X_dev)
-		print("Accuracy: %.03f" % acc)
+		print("Accuracy: %.03f" % acc)'''
+
+		# q = best unigram frequency from omitted vocab
+		# this is the best expected loss out of that set
+		q = vocab.freq[vocab_size] / sum(vocab.freq[vocab_size:])
+
+		def _train():
+			''' Calls the RNN training routine. '''
+			r = RNN(vocab_size, hdim, vocab_size)
+			run_loss = r.train_np(X_train, D_train, X_dev, D_dev, 
+								  back_steps=lookback, learning_rate=lr, epochs=10)
+			adjusted_loss = adjust_loss(run_loss, fraction_lost, q)
+
+			print("Unadjusted: %.03f" % np.exp(run_loss))
+			print("Adjusted for missing vocab: %.03f" % np.exp(adjusted_loss))
+			return r, run_loss, adjusted_loss
+
+		# when hyperparameters are not given, do grid search
+		if hdim is None:
+			hdims = [25, 50, 100]
+			lookbacks = [0, 2, 5]
+			lrs = [1., .5, .1, .05]
+			hyperparams = [hdims, lookbacks, lrs]
+
+			experiment = []
+			best_loss = -1
+			best_params = None
+
+			# iterate over all combinations of params
+			for params in itertools.product(*hyperparams):
+				hdim = params[0]
+				lookback = params[1]
+				lr = params[2]
+
+				r, run_loss, adjusted_loss = _train()
+				experiment.append({
+					'hdim': hdim,
+					'lookback': lookback,
+					'lr': lr,
+					'loss': run_loss,
+					'loss_adjusted': adjusted_loss
+				})
+
+				# keep track of the best model
+				if best_loss < 0 or best_loss > run_loss:
+					best_loss = run_loss
+					best_params = params
+					suffix = '_np_hdim_{}_lb_{}_lr_{}'.format(hdim, lookback, lr)
+					r.save_weights(suffix=suffix)
+
+			# save experiment results to file
+			df = pd.DataFrame(experiment)
+			df.to_csv('question3b.csv')
+			print('\nFinished parameter tuning.')
+			print('\nBest params:\nhdim = {}\
+				   \nlookback = {}\
+				   \nlearning rate = {}'.format(best_params[0],
+												best_params[1],
+												best_params[2]))
+				
+		else:
+			r, run_loss, adjusted_loss = _train()
+			r.save_weights(suffix='-np')
 
 	
 	if mode == "predict-q2":
