@@ -13,7 +13,7 @@ import os
 from utils import *
 from rnnmath import *
 
-os.environ['KERAS_BACKEND']='theano'
+# os.environ['KERAS_BACKEND']='theano'
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
@@ -21,6 +21,9 @@ from keras.utils.np_utils import to_categorical
 
 from keras.layers import Embedding
 from keras.layers import Dense, Input, Flatten, Masking, dot
+
+from keras import optimizers
+
 from keras.layers import Conv1D, MaxPooling1D, Embedding, Merge, Dropout, LSTM, GRU, Bidirectional, SimpleRNN
 from keras.models import Model
 
@@ -74,7 +77,7 @@ data = data[indices]
 labels = labels[indices]
 nb_validation_samples = int(VALIDATION_SPLIT * data.shape[0])'''
 
-train_size = 2500
+train_size = 25000 #TODO
 dev_size = 1000
 vocab_size = 2000
 
@@ -158,85 +161,85 @@ preds = Dense(1, activation='sigmoid')(l_lstm)
 
 model = Model(sequence_input, preds)
 model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
+              optimizer=optimizers.SGD(lr=1.0, momentum=0.0, decay=0.2, nesterov=False),
               metrics=['acc'])
 
-print("model fitting - Bidirectional LSTM")
-model.summary()
-#model.fit(x_train, y_train, validation_data=(x_val, y_val),
-#          nb_epoch=30, batch_size=50)
-
-#print(x_val[:3])
-#print(model.predict(x_val[:3]))
-
-# Attention GRU network		  
-class AttLayer(Layer):
-    def __init__(self, **kwargs):
-        self.init = initializers.RandomNormal()
-        #self.input_spec = [InputSpec(ndim=3)]
-        super(AttLayer, self).__init__(**kwargs)
-
-    def build(self, input_shape):
-        assert len(input_shape)==3
-        #self.W = self.init((input_shape[-1],1))
-        self.W = self.init((input_shape[-1],))
-        #self.input_spec = [InputSpec(shape=input_shape)]
-        self.trainable_weights = [self.W]
-        super(AttLayer, self).build(input_shape)  # be sure you call this somewhere!
-
-    def call(self, x, mask=None):
-        print(x.shape, self.W.shape)
-        eij = K.tanh(K.dot(x, self.W))
-        # eij = K.tanh(dot([x, self.W], axes=(2,0)))
-        
-        ai = K.exp(eij)
-        weights = ai/K.sum(ai, axis=1).dimshuffle(0,'x')
-        
-        weighted_input = x*weights.dimshuffle(0,1,'x')
-        return weighted_input.sum(axis=1)
-
-    def get_output_shape_for(self, input_shape):
-        return (input_shape[0], input_shape[-1])
-
-'''embedding_matrix = np.random.random((len(word_index) + 1, EMBEDDING_DIM))
-for word, i in word_index.items():
-    embedding_vector = embeddings_index.get(word)
-    if embedding_vector is not None:
-        # words not found in embedding index will be all-zeros.
-        embedding_matrix[i] = embedding_vector
-        
-embedding_layer = Embedding(len(word_index) + 1,
-                            EMBEDDING_DIM,
-                            weights=[embedding_matrix],
-                            input_length=MAX_SEQUENCE_LENGTH,
-                            trainable=True)'''
-
-
-
-'''sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
-#embedded_sequences = embedding_layer(sequence_input)
-l_gru = Bidirectional(GRU(100, return_sequences=True))(sequence_input)
-l_att = AttLayer()(l_gru)
-preds = Dense(1, activation='softmax')(l_att)
-model = Model(sequence_input, preds)
-model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['acc'])'''
-
-sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH, vocab_size), dtype='float32')
-#embedded_sequences = embedding_layer(sequence_input)
-#mask = Masking(mask_value=.125, input_shape=(MAX_SEQUENCE_LENGTH, vocab_size))(sequence_input)
-l_lstm = Bidirectional(SimpleRNN(50, activation='sigmoid', use_bias=False, return_sequences=True))(sequence_input)
-l_att = AttLayer()(l_lstm)
-preds = Dense(1, activation='sigmoid')(l_att)
-
-model = Model(sequence_input, preds)
-model.compile(loss='binary_crossentropy',
-              optimizer='rmsprop',
-              metrics=['acc'])
-
-
-#print("model fitting - attention GRU network")
+print("model fitting - simple RNN")
 model.summary()
 model.fit(x_train, y_train, validation_data=(x_val, y_val),
-          nb_epoch=10, batch_size=50)
+         nb_epoch=5, batch_size=50)
+
+print(x_val[:3])
+print(model.predict(x_val[:3]))
+
+# Attention GRU network		  
+# class AttLayer(Layer):
+#     def __init__(self, **kwargs):
+#         self.init = initializers.RandomNormal()
+#         #self.input_spec = [InputSpec(ndim=3)]
+#         super(AttLayer, self).__init__(**kwargs)
+#
+#     def build(self, input_shape):
+#         assert len(input_shape)==3
+#         #self.W = self.init((input_shape[-1],1))
+#         self.W = self.init((input_shape[-1],))
+#         #self.input_spec = [InputSpec(shape=input_shape)]
+#         self.trainable_weights = [self.W]
+#         super(AttLayer, self).build(input_shape)  # be sure you call this somewhere!
+#
+#     def call(self, x, mask=None):
+#         print(x.shape, self.W.shape)
+#         eij = K.tanh(K.dot(x, self.W))
+#         # eij = K.tanh(dot([x, self.W], axes=(2,0)))
+#
+#         ai = K.exp(eij)
+#         weights = ai/K.sum(ai, axis=1).dimshuffle(0,'x')
+#
+#         weighted_input = x*weights.dimshuffle(0,1,'x')
+#         return weighted_input.sum(axis=1)
+#
+#     def get_output_shape_for(self, input_shape):
+#         return (input_shape[0], input_shape[-1])
+#
+# '''embedding_matrix = np.random.random((len(word_index) + 1, EMBEDDING_DIM))
+# for word, i in word_index.items():
+#     embedding_vector = embeddings_index.get(word)
+#     if embedding_vector is not None:
+#         # words not found in embedding index will be all-zeros.
+#         embedding_matrix[i] = embedding_vector
+#
+# embedding_layer = Embedding(len(word_index) + 1,
+#                             EMBEDDING_DIM,
+#                             weights=[embedding_matrix],
+#                             input_length=MAX_SEQUENCE_LENGTH,
+#                             trainable=True)'''
+#
+#
+#
+# '''sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH,), dtype='int32')
+# #embedded_sequences = embedding_layer(sequence_input)
+# l_gru = Bidirectional(GRU(100, return_sequences=True))(sequence_input)
+# l_att = AttLayer()(l_gru)
+# preds = Dense(1, activation='softmax')(l_att)
+# model = Model(sequence_input, preds)
+# model.compile(loss='binary_crossentropy',
+#               optimizer='rmsprop',
+#               metrics=['acc'])'''
+#
+# sequence_input = Input(shape=(MAX_SEQUENCE_LENGTH, vocab_size), dtype='float32')
+# #embedded_sequences = embedding_layer(sequence_input)
+# #mask = Masking(mask_value=.125, input_shape=(MAX_SEQUENCE_LENGTH, vocab_size))(sequence_input)
+# l_lstm = Bidirectional(SimpleRNN(50, activation='sigmoid', use_bias=False, return_sequences=True))(sequence_input)
+# l_att = AttLayer()(l_lstm)
+# preds = Dense(1, activation='sigmoid')(l_att)
+#
+# model = Model(sequence_input, preds)
+# model.compile(loss='binary_crossentropy',
+#               optimizer='rmsprop',
+#               metrics=['acc'])
+#
+#
+# #print("model fitting - attention GRU network")
+# model.summary()
+# model.fit(x_train, y_train, validation_data=(x_val, y_val),
+#           nb_epoch=10, batch_size=50)
