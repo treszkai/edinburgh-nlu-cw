@@ -50,6 +50,11 @@ class RNN(object):
         self.deltaV = np.zeros((self.hidden_dims, self.vocab_size))
         self.deltaW = np.zeros((self.out_vocab_size, self.hidden_dims))
 
+        # matrices to accumulate weight gradient RMSs
+        self.rmsU = np.zeros((self.hidden_dims, self.hidden_dims))
+        self.rmsV = np.zeros((self.hidden_dims, self.vocab_size))
+        self.rmsW = np.zeros((self.out_vocab_size, self.hidden_dims))
+
     def save_weights(self, dir='models', suffix=''):
         '''
         Save current state of matrices U, V, and W.
@@ -480,7 +485,7 @@ class RNN(object):
         return best_loss
 
     def train_np(self, X, D, X_dev, D_dev, epochs=10, learning_rate=0.5, anneal=5, back_steps=0, batch_size=100,
-                 min_change=0.0001, log=True):
+                 min_change=0.0001, log=True, beta=0.9):
         '''
         train the RNN on some training set X, D while optimizing the loss on a dev set X_dev, D_dev
 
@@ -580,6 +585,16 @@ class RNN(object):
                     self.deltaU /= batch_size
                     self.deltaV /= batch_size
                     self.deltaW /= batch_size
+
+                    # code for RMSprop
+                    for param, rms, grad in zip([self.U, self.V, self.W],
+                                                [self.rmsU, self.rmsV, self.rmsW],
+                                                [self.deltaU, self.deltaV, self.deltaW]):
+                        rms *= beta
+                        rms += (1 - beta) * (grad ** 2)
+                        grad *= learning_rate
+                        grad /= np.sqrt(rms + self.epsilon)
+
                     self.apply_deltas(learning_rate)
 
             if len(X) % batch_size > 0:
@@ -587,6 +602,16 @@ class RNN(object):
                 self.deltaU /= mod
                 self.deltaV /= mod
                 self.deltaW /= mod
+
+                # code for RMSprop
+                for param, rms, grad in zip([self.U, self.V, self.W],
+                                            [self.rmsU, self.rmsV, self.rmsW],
+                                            [self.deltaU, self.deltaV, self.deltaW]):
+                    rms *= beta
+                    rms += (1 - beta) * (grad ** 2)
+                    grad *= learning_rate
+                    grad /= np.sqrt(rms + self.epsilon)
+
                 self.apply_deltas(learning_rate)
 
             loss = sum([loss_function(X_dev[i], D_dev[i]) for i in range(len(X_dev))]) / loss_sum
