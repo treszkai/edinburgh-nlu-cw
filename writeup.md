@@ -134,6 +134,7 @@ We designed two experiments to answer these questions:
 * Quanlitative attention...
 
 ### Log for LSTM with Attention
+```
 Train on 22500 samples, validate on 2500 samples
 Epoch 1/10
 22500/22500 [==============================] - 206s 9ms/step - loss: 0.3267 - acc: 0.8635 - val_loss: 0.2190 - val_acc: 0.9128
@@ -151,3 +152,4 @@ Epoch 7/10
 22500/22500 [==============================] - 202s 9ms/step - loss: 0.1312 - acc: 0.9444 - val_loss: 0.1924 - val_acc: 0.9284
 Epoch 8/10
 22500/22500 [==============================] - 202s 9ms/step - loss: 0.1262 - acc: 0.9460 - val_loss: 0.1971 - val_acc: 0.9256
+```
